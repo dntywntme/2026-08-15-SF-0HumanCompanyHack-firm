@@ -62,12 +62,14 @@ Three tiers, distinguished by **what enforces them** — not by how much the
 agents are told to trust each other.
 
 ```
-TIER 0 — ZERO TRUST     firm ⟷ client
-  enforced by GitHub account permissions. Channel: pull request only.
-  No shared secrets, no shared runner.
+TIER 0 — ZERO TRUST     firm ⟷ client   (separate repositories)
+  enforced by credential scope. The client agent holds a fine-grained
+  token carrying Issues:write on the firm repo and nothing else, so it
+  can place an order and cannot push code, merge, or alter a workflow.
+  Channel: a GitHub Issue. No shared secrets, no shared runner.
 
-TIER 1 — PARTIAL TRUST  Builder ⟷ Integrator, within a repo
-  enforced by branch protection + scoped PATs + CODEOWNERS.
+TIER 1 — PARTIAL TRUST  Builder ⟷ Integrator, within the firm repo
+  enforced by branch protection + CODEOWNERS.
   Builder pushes branches and cannot merge. Integrator merges and
   does not author product code.
 
@@ -77,16 +79,18 @@ TIER 2 — FULL TRUST     subagents inside one actor's worktree
 
 | Tier | Mechanism | Can the constrained party bypass it? |
 |---|---|---|
-| 0 | Separate GitHub accounts; `403` on direct push | No — enforced by a system neither party controls |
-| 1 | Branch protection, `CODEOWNERS`, fine-grained PAT scopes | No at runtime, but both credentials are minted by the same account |
+| 0 | Fine-grained token scoped to one repo and one permission | No — GitHub refuses the write before any code runs |
+| 1 | Branch protection, `CODEOWNERS`, required review | No at runtime |
 | 2 | Convention | Yes |
 
-Tier 0 is the load-bearing one, and it is real: a push to the firm's repo from
-the Builder credential fails with `Permission ... denied` before any review
-happens. Tier 1 is genuine runtime enforcement — a Builder holding a
-`Contents: write` token still cannot merge its own pull request — but it is
-revocable by the account that issued both credentials. We claim it as *more*
-trust, not full trust.
+Tier 0 is the load-bearing one. The separation is per-repository and
+per-credential, which is what GitHub actually enforces: a token scoped to
+Issues on the firm repo cannot be talked into pushing a commit, no matter what
+the client agent decides to do. Putting the two repositories under different
+*accounts* would add defence against a compromised owner, but the enforcement
+mechanism at runtime is identical, and an account whose Actions are restricted
+cannot run the pipeline at all — a boundary that cannot execute CI is a
+liability rather than a control.
 
 This structure exists because the verification step is what makes multi-agent
 work survivable: independent topologies amplify errors 17.2×, centralized ones
