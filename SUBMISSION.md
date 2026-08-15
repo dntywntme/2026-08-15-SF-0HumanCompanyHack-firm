@@ -53,6 +53,26 @@ Entering multiple tracks is explicitly encouraged by the rules.
 | Best use of Replay | _run their QA against the dashboard_ |
 | Best use of Superserve | _if agents need pausable sandboxes_ |
 
+## How the money actually moved
+
+Stated precisely, because "real revenue" is a judging criterion and the honest
+answer has two halves.
+
+**Money out to humans: real.** The Terac study is live and committed $9.00 of
+incentive to two people for a one-minute task. Those experts are paid actual
+money when the agent approves their submission. The balance funding it is
+hackathon credit provided by the sponsor rather than our own capital, which
+changes whose money it is but not whether a person gets paid.
+
+**Money in from customers: sandboxed.** Stripe is running in a sandbox, so
+charges are test-mode objects. The full path is real and exercised end to end —
+the client agent creates and confirms a PaymentIntent, the charge appears in
+`/v1/charges`, the poller publishes it, and the P&L renders it — but no
+customer's card is debited. We did not want to claim revenue we did not earn.
+
+The agent-to-human payment is therefore the leg where value genuinely changes
+hands, and it is the leg the company's cost of goods depends on.
+
 ## What we did not do
 
 Stated plainly, because judges ask:
