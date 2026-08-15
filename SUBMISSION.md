@@ -22,8 +22,8 @@ the required fields then and editing until the lock.
 |---|---|---|
 | Project name | yes | Broker |
 | Tagline | yes | *An agent-run company that buys human expertise, marks it up, and sells the result.* |
-| Public GitHub repo | yes | https://github.com/qte77/2026-08-15-SF-0HumanCompanyHack-firm |
-| Live demo URL | no | _TBD_ |
+| Public GitHub repo | yes | https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm |
+| Live demo URL | no | https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/ |
 | Demo video (YouTube, 2 min max) | no | _TBD_ |
 
 **Out of band to organizers:** team name + Stripe Payment Link + restricted key
@@ -52,7 +52,6 @@ Entering multiple tracks is explicitly encouraged by the rules.
 | **Best Use of Terac** | Terac is the supply chain, not a survey bolted on. Remove it and the company has no product — its cost of goods disappears. Before/after is structural: AI-only answer versus human-verified answer, side by side, with the price paid |
 | Best use of Linq | _if the messaging surface lands_ |
 | Best use of Replay | _run their QA against the dashboard_ |
-| Best use of Render | _deploy via Render Workflows_ |
 | Best use of Superserve | _if agents need pausable sandboxes_ |
 
 ## What we did not do

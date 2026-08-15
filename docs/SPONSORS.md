@@ -85,19 +85,17 @@ you pay on verified completion.
   be eligible for the main prize (Best Overall Project & Best Overall Agent-Run
   Company)…"* Assume the wider reading; ask in Slack.
 
-## Render — Workflows only
+## Render — not used
 
-Durable orchestration for long-running distributed tasks: per-run instances,
-queuing, retries, fan-out. A web service on Render does **not** qualify.
+Dropped deliberately. Render Workflows was our candidate for two jobs: hosting
+the dashboard and running the ledger poller. Both are now GitHub-native — Pages
+serves the site from the `gh-pages` branch and a scheduled Action polls Stripe —
+which removes a dependency, a signup, and an unverified requirement (whether
+deploying a Workflow needs a payment method) from the critical path.
 
-- **SDK:** Python `render_sdk` — `from render_sdk import Workflows, Retry`, then
-  `@app.task`; TypeScript `@renderinc/sdk`. Trigger via
-  `render.workflows.run_task("my-workflow/hello", [...])`.
-- **Deploy:** Dashboard → **New > Workflow** → link repo. **`render.yaml`
-  blueprints are not yet compatible**, so there is no infra-as-code shortcut. CLI
-  2.11.0+ has `render workflows init`. Public beta, Python and TypeScript only.
-- **Hardest requirement:** whether a payment method is needed to deploy a Workflow
-  is **unverified** — check the dashboard first; it invalidates the track if wrong.
+The cost is the track: $500 / $300 / $100, and it pays in credits rather than
+cash. Reinstating it would mean deploying a Workflow, since a web service on
+Render explicitly does not qualify.
 
 ## Replay
 
