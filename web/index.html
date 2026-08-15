@@ -65,11 +65,17 @@
   <p class="eyebrow">Zero-Human Company Hackathon &middot; San Francisco &middot; 2026-08-15</p>
   <h1 class="app-title">An agent-run company that employs humans.</h1>
   <p class="app-sub">
+    Broker sells judgement to other agents. Its customers are personal
+    assistants acting for their humans &mdash; an assistant with calendar access
+    sees the investor meeting at six, and buys a verdict on which pitch line
+    lands, without waking anyone up to ask.
+  </p>
+  <p class="app-sub">
     Every &ldquo;AI does your X&rdquo; product dies at the same place: the ten percent the
-    agent does not know. Broker does not hide that boundary &mdash; it prices it. When
-    its confidence drops below threshold, the company buys human expertise on the
-    open market, marks it up, and sells the result. Humans are not employees here.
-    They are cost of goods.
+    agent does not know. Broker does not hide that boundary &mdash; it prices it.
+    When its confidence drops below threshold it buys a real human&rsquo;s judgement,
+    marks it up, and sells the result. Humans are not employees here. They are
+    cost of goods, and no human works at either end of the transaction.
   </p>
 
   <div class="grid2">
@@ -87,21 +93,21 @@
     <section class="chart-card">
       <h2 class="chart-title">Unit economics</h2>
       <dl class="pnl">
-        <dt>Expert response (Terac)</dt> <dd>$4.50</dd>
-        <dt>Responses per verdict</dt>   <dd>1</dd>
-        <dt>Cost of goods</dt>           <dd>$4.50</dd>
+        <dt>Price per verdict</dt>                <dd>$1.00</dd>
         <div class="rule"></div>
-        <dt>Demo price (capped)</dt>     <dd>$1.00</dd>
-        <dt>Demo margin</dt>             <dd class="neg">-$3.50</dd>
+        <dt>Answered by the agent</dt>            <dd>$0.01</dd>
+        <dt>Escalated to a paid human</dt>        <dd>$4.50</dd>
         <div class="rule"></div>
-        <dt>Price at list</dt>           <dd>$9.00</dd>
-        <dt><strong>Gross margin at list</strong></dt> <dd><span class="big pos">50%</span></dd>
+        <dt>Escalation rate</dt>                  <dd id="esc">10%</dd>
+        <dt>Blended cost of goods</dt>            <dd id="blended">$0.46</dd>
+        <dt><strong>Gross margin</strong></dt>    <dd><span id="gm" class="big pos">54%</span></dd>
       </dl>
       <p class="mono muted">
-        Prices are capped at $1 for the event, so every demo sale runs at a loss
-        against real cost of goods. The list column is the same company at its
-        real price. Both are shown because hiding the first would make the
-        second a claim rather than a measurement.
+        The confidence threshold is the profit lever. Most orders the agent
+        answers itself on an open-weight model for a fraction of a cent; it buys
+        a paid human only when it judges that it does not know. Past roughly 22%
+        escalation this company stops making money, so knowing what it does not
+        know is not a safety feature here &mdash; it is the margin.
       </p>
     </section>
   </div>
