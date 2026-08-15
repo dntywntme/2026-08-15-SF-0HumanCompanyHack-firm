@@ -8,6 +8,23 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="assets/linear.css">
 <link rel="stylesheet" href="assets/a11y.css">
+<style>
+  /* Layout the vendored kit does not cover. */
+  .grid2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .pnl { display: grid; gap: .25rem; grid-template-columns: 1fr auto; align-items: baseline; }
+  .pnl dt { color: var(--text-muted); }
+  .pnl dd { margin: 0; font-family: var(--font-mono); text-align: right; }
+  .pnl .rule { grid-column: 1 / -1; border-top: 1px solid var(--border); margin: .4rem 0; }
+  .big { font-size: 1.6rem; font-weight: 700; font-family: var(--font-mono); }
+  .pos { color: var(--success); } .neg { color: var(--danger); }
+  .hl { border: 1px solid var(--border); border-radius: var(--radius-md);
+        padding: 1rem; background: var(--surface-lift); }
+  .hl h3 { margin: 0 0 .35rem; font-size: 1.05rem; }
+  .muted { color: var(--text-muted); }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+  .mono { font-family: var(--font-mono); font-size: .85rem; }
+  [hidden] { display: none !important; }
+</style>
 </head>
 <body>
 
@@ -17,65 +34,183 @@
 
 <main class="app-main">
 
+<!-- ─────────── TASK VIEW: shown only when Terac sends a participant here ─────────── -->
+<section id="task" hidden>
+  <p class="eyebrow">Paid task &middot; about one minute</p>
+  <h1 class="app-title">Which headline is more compelling?</h1>
+  <p class="app-sub">
+    Two versions of the same product description. Pick the one you find more
+    convincing as a buyer, then tell us why in one short sentence. There are no
+    right answers &mdash; your first reaction is what we are paying for.
+  </p>
+
+  <div class="grid2" style="margin:1.5rem 0">
+    <div class="hl"><h3>Headline A</h3><p>Ship faster with AI.</p></div>
+    <div class="hl"><h3>Headline B</h3><p>Your on-call engineer that never sleeps.</p></div>
+  </div>
+
+  <div class="chart-card">
+    <p><strong>How to answer:</strong> your choice and your reason are collected in
+    the questions Terac asked you, so there is nothing to submit here. When you
+    have answered them, use the button below to mark this task complete.</p>
+    <p class="row">
+      <a id="complete" class="btn btn--primary" href="#">Mark task complete</a>
+      <span class="mono muted" id="sub"></span>
+    </p>
+  </div>
+</section>
+
+<!-- ─────────── COMPANY VIEW: the default ─────────── -->
+<section id="company">
   <p class="eyebrow">Zero-Human Company Hackathon &middot; San Francisco &middot; 2026-08-15</p>
   <h1 class="app-title">An agent-run company that employs humans.</h1>
   <p class="app-sub">
     Every &ldquo;AI does your X&rdquo; product dies at the same place: the ten percent the
     agent does not know. Broker does not hide that boundary &mdash; it prices it. When
-    confidence drops below threshold, the company buys human expertise on the open
-    market, marks it up, and sells the result. Humans are not employees here. They
-    are cost of goods.
+    its confidence drops below threshold, the company buys human expertise on the
+    open market, marks it up, and sells the result. Humans are not employees here.
+    They are cost of goods.
   </p>
 
-  <section class="chart-card">
-    <h2 class="chart-title">Ledger</h2>
-    <p class="empty" data-panel="pnl">Awaiting first transaction.</p>
-  </section>
+  <div class="grid2">
+    <section class="chart-card">
+      <h2 class="chart-title">Ledger</h2>
+      <dl class="pnl">
+        <dt>Revenue</dt>          <dd id="rev">&mdash;</dd>
+        <dt>Cost of goods</dt>    <dd id="cogs">&mdash;</dd>
+        <div class="rule"></div>
+        <dt><strong>Margin</strong></dt> <dd><span id="margin" class="big">&mdash;</span></dd>
+      </dl>
+      <p class="mono muted" id="ledger-note">loading&hellip;</p>
+    </section>
+
+    <section class="chart-card">
+      <h2 class="chart-title">Unit economics</h2>
+      <dl class="pnl">
+        <dt>Expert response (Terac)</dt> <dd>$4.50</dd>
+        <dt>Responses per verdict</dt>   <dd>3</dd>
+        <dt>Cost of goods</dt>           <dd>$13.50</dd>
+        <div class="rule"></div>
+        <dt>Demo price (capped)</dt>     <dd>$1.00</dd>
+        <dt>Demo margin</dt>             <dd class="neg">-$12.50</dd>
+        <div class="rule"></div>
+        <dt>Price at list</dt>           <dd>$19.00</dd>
+        <dt><strong>Gross margin at list</strong></dt> <dd><span class="big pos">29%</span></dd>
+      </dl>
+      <p class="mono muted">
+        Prices are capped at $1 for the event, so every demo sale runs at a loss
+        against real cost of goods. The list column is the same company at its
+        real price. Both are shown because hiding the first would make the
+        second a claim rather than a measurement.
+      </p>
+    </section>
+  </div>
 
   <section class="chart-card">
-    <h2 class="chart-title">Human input &mdash; before and after</h2>
-    <p class="empty" data-panel="beforeafter">Awaiting first sourced answer.</p>
+    <h2 class="chart-title">Decisions</h2>
+    <p class="muted">Every judgement the company made, and what it rejected. No human appears in any of them.</p>
+    <p class="empty" id="decisions">No run published yet.</p>
   </section>
 
   <section class="chart-card">
     <h2 class="chart-title">Run</h2>
     <div class="chips" id="stages"></div>
-    <p class="empty" data-panel="stages">Loading checkpoints&hellip;</p>
+    <p class="empty" id="stages-note">loading checkpoints&hellip;</p>
   </section>
 
   <section class="chart-card">
     <h2 class="chart-title">Incidents</h2>
-    <p class="empty" data-panel="incidents">No failures recorded yet.</p>
+    <p class="muted">Failures the company caught, and what it did about them.</p>
+    <p class="empty" id="incidents">None recorded.</p>
   </section>
+</section>
 
 </main>
 
 <script>
-// The page is static and holds no credentials. It renders committed checkpoints,
-// so the deployed site and `make replay` show the same artifact.
+// The page holds no credentials by construction. It renders committed JSON, so
+// the deployed site and `make replay` show the same artifact.
 (async () => {
-  const stagesEl = document.getElementById('stages');
-  const note = document.querySelector('[data-panel="stages"]');
-  const names = ['00-intake', '01-process', '02-deliver'];
-  const found = [];
+  const qs = new URLSearchParams(location.search);
+  const submissionId = qs.get("teracSubmissionId") || qs.get("submissionId");
 
-  for (const n of names) {
-    try {
-      const r = await fetch(`runs/demo/${n}.json`, { cache: 'no-store' });
-      if (r.ok) found.push({ name: n, data: await r.json() });
-    } catch { /* static host, missing file is expected pre-run */ }
-  }
-
-  if (!found.length) {
-    note.textContent = 'No checkpoints published yet.';
+  // A participant arriving from Terac gets the task, not the dashboard.
+  if (submissionId) {
+    document.getElementById("company").hidden = true;
+    document.getElementById("task").hidden = false;
+    document.getElementById("sub").textContent = submissionId;
+    const cb = new URL("https://terac.com/api/external/callback");
+    cb.searchParams.set("submissionId", submissionId);
+    cb.searchParams.set("teracSubmissionId", submissionId);
+    if (qs.get("taskId")) cb.searchParams.set("taskId", qs.get("taskId"));
+    cb.searchParams.set("result", "completed");
+    document.getElementById("complete").href = cb.toString();
     return;
   }
-  note.remove();
-  for (const s of found) {
-    const chip = document.createElement('span');
-    chip.className = 'chip';
-    chip.textContent = s.data.stage ?? s.name;
-    stagesEl.appendChild(chip);
+
+  const money = (s) => `$${Number(s ?? 0).toFixed(2)}`;
+  const get = async (p) => {
+    try { const r = await fetch(p, { cache: "no-store" }); return r.ok ? await r.json() : null; }
+    catch { return null; }
+  };
+
+  // Ledger: revenue is real money from Stripe, cost of goods is real money paid
+  // to Terac experts. Margin may be negative and is shown as such.
+  const ledger = await get("runs/ledger.json");
+  const note = document.getElementById("ledger-note");
+  if (ledger) {
+    const rev = Number(ledger.revenue_usd ?? 0);
+    const cogs = Number(ledger.cogs_usd ?? 0);
+    document.getElementById("rev").textContent = money(rev);
+    document.getElementById("cogs").textContent = `-${money(cogs)}`;
+    const m = document.getElementById("margin");
+    m.textContent = money(rev - cogs);
+    m.className = "big " + (rev - cogs < 0 ? "neg" : "pos");
+    note.textContent = ledger.source === "stripe"
+      ? `${ledger.transactions} settled · ${ledger.failed} failed · ${ledger.refunded} refunded · live from Stripe`
+      : "Stripe unreachable — showing last known state.";
+  } else {
+    note.textContent = "No ledger published yet.";
+  }
+
+  // Stage checkpoints, and anything the run recorded alongside them.
+  const found = [];
+  for (const n of ["00-intake", "01-triage", "02-source", "03-verify", "04-price", "05-deliver",
+                   "00-intake", "01-process", "02-deliver"]) {
+    const d = await get(`runs/demo/${n}.json`);
+    if (d && !found.some((f) => f.stage === d.stage)) found.push(d);
+  }
+  const sn = document.getElementById("stages-note");
+  if (found.length) {
+    sn.remove();
+    const chips = document.getElementById("stages");
+    for (const s of found) {
+      const c = document.createElement("span");
+      c.className = "chip";
+      c.textContent = s.stage;
+      chips.appendChild(c);
+    }
+    const decisions = found.flatMap((s) => s.output?.decisions ?? []);
+    if (decisions.length) {
+      const el = document.getElementById("decisions");
+      el.className = "";
+      el.innerHTML = decisions.map((d) =>
+        `<div class="hl" style="margin-bottom:.5rem"><h3>${d.chose} <span class="muted mono">${d.kind}</span></h3>
+         <p>${d.because}</p>
+         <p class="mono muted">rejected: ${(d.rejected ?? []).join(", ")} · cost ${money(d.cost_usd)}</p></div>`
+      ).join("");
+    }
+    const incidents = found.flatMap((s) => s.output?.incidents ?? []);
+    if (incidents.length) {
+      const el = document.getElementById("incidents");
+      el.className = "";
+      el.innerHTML = incidents.map((i) =>
+        `<div class="hl" style="margin-bottom:.5rem"><h3>${i.category} <span class="muted mono">${i.stage}</span></h3>
+         <p>${i.detail}</p><p class="mono muted">recovery: ${i.recovery}</p></div>`
+      ).join("");
+    }
+  } else {
+    sn.textContent = "No checkpoints published yet.";
   }
 })();
 </script>

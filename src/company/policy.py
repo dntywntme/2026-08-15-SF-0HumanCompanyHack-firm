@@ -42,8 +42,8 @@ def _flag(name: str, default: bool) -> bool:
 class Policy:
     confidence_threshold: float = 0.65
     markup: Decimal = Decimal("2.0")
-    min_price_usd: Decimal = Decimal("9.00")
-    max_price_usd: Decimal = Decimal("19.00")
+    min_price_usd: Decimal = Decimal("0.50")
+    max_price_usd: Decimal = Decimal("1.00")
     require_payment_before_cogs: bool = True
     max_unpaid_cogs_per_client_usd: Decimal = Decimal("4.50")
     max_total_cogs_usd: Decimal = Decimal("27.00")
@@ -53,8 +53,8 @@ class Policy:
         return cls(
             confidence_threshold=float(os.environ.get("CONFIDENCE_THRESHOLD", "0.65")),
             markup=_dec("PRICE_MARKUP", "2.0"),
-            min_price_usd=_dec("MIN_PRICE_USD", "9.00"),
-            max_price_usd=_dec("MAX_PRICE_USD", "19.00"),
+            min_price_usd=_dec("MIN_PRICE_USD", "0.50"),
+            max_price_usd=_dec("MAX_PRICE_USD", "1.00"),
             require_payment_before_cogs=_flag("REQUIRE_PAYMENT_BEFORE_COGS", True),
             max_unpaid_cogs_per_client_usd=_dec("MAX_UNPAID_COGS_PER_CLIENT_USD", "4.50"),
             max_total_cogs_usd=_dec("MAX_TOTAL_COGS_USD", "27.00"),
