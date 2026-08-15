@@ -1,0 +1,10 @@
+# Tier 1 of the trust model: the Builder pushes branches but cannot merge.
+# The Integrator is the only identity that approves changes to main.
+#
+# This file is only load-bearing with branch protection enabled on main:
+#   Settings -> Branches -> require a pull request, require review from
+#   Code Owners, block force-push.
+#
+# See README.md ("Two actors, three tiers of trust") and docs/ARCHITECTURE.md.
+
+* @qte77
