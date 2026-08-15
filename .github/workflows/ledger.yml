@@ -33,22 +33,12 @@ jobs:
         # take the published page down.
         run: python3 scripts/poll_ledger.py
 
-      - name: Publish to gh-pages
+      - name: Commit the ledger
+        # Committing to main is what republishes: pages.yml runs on push to main
+        # and redeploys the site. One publish path, not two.
         run: |
-          mkdir -p _site
-          cp -r web/. _site/
-          mkdir -p _site/runs
-          cp -r runs/. _site/runs/ 2>/dev/null || true
-          touch _site/.nojekyll
-          test -f _site/index.html
-
           git config user.name "broker-bot"
           git config user.email "broker-bot@users.noreply.github.com"
-          git fetch origin gh-pages
-          git checkout gh-pages
-          find . -maxdepth 1 -mindepth 1 -not -name '.git' -not -name '_site' -exec rm -rf {} +
-          cp -r _site/. .
-          rm -rf _site
-          git add -A
-          git diff --staged --quiet || git commit -m "chore(ledger): republish dashboard"
-          git push origin gh-pages
+          git add runs/ledger.json
+          git diff --staged --quiet || git commit -m "chore(ledger): refresh [skip ci]"
+          git push origin HEAD:main
