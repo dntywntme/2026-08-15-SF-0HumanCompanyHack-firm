@@ -1,8 +1,14 @@
 {
   "failed": 0,
-  "recent": [],
+  "recent": [
+    {
+      "amount_usd": "1.00",
+      "livemode": false,
+      "status": "succeeded"
+    }
+  ],
   "refunded": 0,
-  "revenue_usd": "0.00",
+  "revenue_usd": "1.00",
   "source": "stripe",
-  "transactions": 0
+  "transactions": 1
 }
