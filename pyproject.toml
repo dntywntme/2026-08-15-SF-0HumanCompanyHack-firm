@@ -3,7 +3,9 @@ name = "company"
 version = "0.1.0"
 description = "Deterministic harness spine for an agent-run company"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pydantic>=2.13.4",
+]
 
 [project.scripts]
 company = "company.harness:main"
