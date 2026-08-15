@@ -1,0 +1,16 @@
+{
+  "index": 0,
+  "output": {
+    "brief": "ship a deterministic agent harness",
+    "item_count": 5,
+    "items": [
+      "ship",
+      "a",
+      "deterministic",
+      "agent",
+      "harness"
+    ]
+  },
+  "run_id": "demo",
+  "stage": "intake"
+}

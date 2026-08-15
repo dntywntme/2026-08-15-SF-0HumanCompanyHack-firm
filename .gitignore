@@ -1,0 +1,26 @@
+.env
+.env.*
+!.env.example
+
+# Local agent/editor tooling. Session config, MCP registrations and installed
+# plugins are per-machine and often carry credentials — they never belong in
+# the repo.
+.claude/
+.claude.json
+.mcp.json
+.claude-plugin/
+.vscode/
+.idea/
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+
+# Run checkpoints are scratch, except the committed golden run that backs
+# `make replay` as the offline demo fallback on a fresh clone.
+runs/*
+!runs/demo/
+runs/demo/*.timing.json

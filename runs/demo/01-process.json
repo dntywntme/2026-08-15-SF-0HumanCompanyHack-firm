@@ -1,0 +1,35 @@
+{
+  "index": 1,
+  "output": {
+    "processed": [
+      {
+        "item": "ship",
+        "size": 4,
+        "slug": "ship"
+      },
+      {
+        "item": "a",
+        "size": 1,
+        "slug": "a"
+      },
+      {
+        "item": "deterministic",
+        "size": 13,
+        "slug": "deterministic"
+      },
+      {
+        "item": "agent",
+        "size": 5,
+        "slug": "agent"
+      },
+      {
+        "item": "harness",
+        "size": 7,
+        "slug": "harness"
+      }
+    ],
+    "total_size": 30
+  },
+  "run_id": "demo",
+  "stage": "process"
+}
