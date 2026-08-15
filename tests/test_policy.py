@@ -110,4 +110,4 @@ def test_policy_reads_env_and_survives_garbage(monkeypatch):
     p = Policy.from_env()
     assert p.markup == Decimal("3.0")
     assert p.require_payment_before_cogs is False
-    assert p.max_total_cogs_usd == Decimal("20.00")  # fell back, did not crash
+    assert p.max_total_cogs_usd == Decimal("27.00")  # fell back, did not crash

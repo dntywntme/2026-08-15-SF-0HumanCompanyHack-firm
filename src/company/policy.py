@@ -41,23 +41,23 @@ def _flag(name: str, default: bool) -> bool:
 @dataclass(frozen=True)
 class Policy:
     confidence_threshold: float = 0.65
-    markup: Decimal = Decimal("2.5")
-    min_price_usd: Decimal = Decimal("5.00")
-    max_price_usd: Decimal = Decimal("49.00")
+    markup: Decimal = Decimal("2.0")
+    min_price_usd: Decimal = Decimal("9.00")
+    max_price_usd: Decimal = Decimal("19.00")
     require_payment_before_cogs: bool = True
-    max_unpaid_cogs_per_client_usd: Decimal = Decimal("5.00")
-    max_total_cogs_usd: Decimal = Decimal("20.00")
+    max_unpaid_cogs_per_client_usd: Decimal = Decimal("4.50")
+    max_total_cogs_usd: Decimal = Decimal("27.00")
 
     @classmethod
     def from_env(cls) -> Policy:
         return cls(
             confidence_threshold=float(os.environ.get("CONFIDENCE_THRESHOLD", "0.65")),
-            markup=_dec("PRICE_MARKUP", "2.5"),
-            min_price_usd=_dec("MIN_PRICE_USD", "5.00"),
-            max_price_usd=_dec("MAX_PRICE_USD", "49.00"),
+            markup=_dec("PRICE_MARKUP", "2.0"),
+            min_price_usd=_dec("MIN_PRICE_USD", "9.00"),
+            max_price_usd=_dec("MAX_PRICE_USD", "19.00"),
             require_payment_before_cogs=_flag("REQUIRE_PAYMENT_BEFORE_COGS", True),
-            max_unpaid_cogs_per_client_usd=_dec("MAX_UNPAID_COGS_PER_CLIENT_USD", "5.00"),
-            max_total_cogs_usd=_dec("MAX_TOTAL_COGS_USD", "20.00"),
+            max_unpaid_cogs_per_client_usd=_dec("MAX_UNPAID_COGS_PER_CLIENT_USD", "4.50"),
+            max_total_cogs_usd=_dec("MAX_TOTAL_COGS_USD", "27.00"),
         )
 
 
