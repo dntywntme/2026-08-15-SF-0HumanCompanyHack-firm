@@ -2,6 +2,16 @@
 .env.*
 !.env.example
 
+# Local agent/editor tooling. Session config, MCP registrations and installed
+# plugins are per-machine and often carry credentials — they never belong in
+# the repo.
+.claude/
+.claude.json
+.mcp.json
+.claude-plugin/
+.vscode/
+.idea/
+
 .venv/
 __pycache__/
 *.pyc
