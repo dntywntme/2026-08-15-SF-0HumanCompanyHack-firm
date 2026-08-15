@@ -50,7 +50,6 @@ Entering multiple tracks is explicitly encouraged by the rules.
 | **Best Overall Agent-Run Company** ($2,500) | Real revenue collected through Stripe during the event, with unit economics shown live: revenue in, Terac spend as cost of goods, margin |
 | **Best Overall Project** ($2,500) | Deterministic harness with measured error handling, an enforced two-actor trust boundary, and an architecture decision backed by published evidence rather than preference |
 | **Best Use of Terac** | Terac is the supply chain, not a survey bolted on. Remove it and the company has no product — its cost of goods disappears. Before/after is structural: AI-only answer versus human-verified answer, side by side, with the price paid |
-| Best use of Linq | _if the messaging surface lands_ |
 | Best use of Replay | _run their QA against the dashboard_ |
 | Best use of Superserve | _if agents need pausable sandboxes_ |
 

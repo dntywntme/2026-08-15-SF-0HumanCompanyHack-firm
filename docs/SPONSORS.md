@@ -128,26 +128,16 @@ Durable Firecracker microVMs that pause indefinitely and resume instantly.
   must be load-bearing. Trap: `timeout_seconds` caps **active** time, not idle
   time, so a long task gets paused mid-run and reads as a hang.
 
-## Linq
+## Linq — not used
 
-One API giving an agent a real phone number on iMessage, with RCS/SMS fallback,
-reactions, typing indicators, and webhooks on every event.
+Dropped deliberately. The track rewards a real phone number on iMessage, and we
+did not want inbound messages routed to a personal number. There is no honest
+partial claim here: the criteria are about the messaging surface itself, so we
+skip it rather than gesture at it.
 
-- **REST:** base `https://api.linqapp.com/api/partner/v3`. `POST /v3/chats` starts
-  a thread, `POST /v3/messages` sends (pass `to`, **omit `from`**). Auth
-  `Authorization: Bearer <token>`. SDKs npm `@linqapp/sdk`, pip `linq-python`; CLI
-  `npm i -g @linqapp/cli`. Webhooks via `POST /v3/webhook-subscriptions`, signing
-  secret returned **once**.
-- The track rewards iMessage Apps, but a real `imessage_app` card needs your own
-  shipped App Store Messages extension. The same-day path is an **`experience`** —
-  a card inside Linq's own app, no `team_id`/`bundle_id`; actions include
-  `agentpay/request_payment`. **Agent Pay** runs on Stripe Connect Standard direct
-  charges, so money lands in your own Stripe.
-- **Hardest requirement:** sandbox access is **not guaranteed instant** — signup
-  runs an automated filter that either provisions a number or routes you to "Your
-  Application Is Under Review", a same-day hard block. Fallback: CLI `linq signup`
-  grants a free *shared* line in seconds.
-
+The cost is the richest sponsor pool ($1,500 / $1,000) and Agent Pay's in-thread
+checkout. Customer intake is a GitHub Issue instead, and payment a Stripe
+Payment Link on the site.
 ## Band
 
 Chat rooms where agents from any framework, on your own infra and keys, coordinate
