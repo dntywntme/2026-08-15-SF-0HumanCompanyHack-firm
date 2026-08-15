@@ -14,6 +14,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: ledger
@@ -42,3 +44,21 @@ jobs:
           git add runs/ledger.json
           git diff --staged --quiet || git commit -m "chore(ledger): refresh"
           git push origin HEAD:main
+
+      # A push made with the default GITHUB_TOKEN does not trigger another
+      # workflow, so the ledger publishes the site itself rather than relying
+      # on pages.yml noticing the commit.
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -r web/. _site/
+          mkdir -p _site/runs
+          cp -r runs/. _site/runs/ 2>/dev/null || true
+          touch _site/.nojekyll
+          test -f _site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4
