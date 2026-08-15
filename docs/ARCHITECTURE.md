@@ -56,6 +56,52 @@ CrewAI Crews → Flows, LangGraph's explicit durability modes. The retreat from
 free-form agent chatter toward explicit, durable, checkpointed execution is
 near-universal.
 
+## Trust model
+
+Three tiers, distinguished by **what enforces them** — not by how much the
+agents are told to trust each other.
+
+```
+TIER 0 — ZERO TRUST     firm ⟷ client
+  enforced by GitHub account permissions. Channel: pull request only.
+  No shared secrets, no shared runner.
+
+TIER 1 — PARTIAL TRUST  Builder ⟷ Integrator, within a repo
+  enforced by branch protection + scoped PATs + CODEOWNERS.
+  Builder pushes branches and cannot merge. Integrator merges and
+  does not author product code.
+
+TIER 2 — FULL TRUST     subagents inside one actor's worktree
+  enforced by nothing. Disjoint write surfaces by convention.
+```
+
+| Tier | Mechanism | Can the constrained party bypass it? |
+|---|---|---|
+| 0 | Separate GitHub accounts; `403` on direct push | No — enforced by a system neither party controls |
+| 1 | Branch protection, `CODEOWNERS`, fine-grained PAT scopes | No at runtime, but both credentials are minted by the same account |
+| 2 | Convention | Yes |
+
+Tier 0 is the load-bearing one, and it is real: a push to the firm's repo from
+the Builder credential fails with `Permission ... denied` before any review
+happens. Tier 1 is genuine runtime enforcement — a Builder holding a
+`Contents: write` token still cannot merge its own pull request — but it is
+revocable by the account that issued both credentials. We claim it as *more*
+trust, not full trust.
+
+This structure exists because the verification step is what makes multi-agent
+work survivable: independent topologies amplify errors 17.2×, centralized ones
+4.4× ([arXiv:2512.08296](https://arxiv.org/abs/2512.08296)). Placing the
+verifier behind a permission boundary the producer cannot cross is the
+difference between a control and a suggestion.
+
+### What this buys that a self-check does not
+
+An agent reviewing its own output shares the failure mode that produced it.
+Tier 0 and Tier 1 guarantee the reviewer is a *different* identity with
+different credentials, so a compromised or prompt-injected Builder cannot
+approve its own artifact. That is the only row in the error table below where
+the actor that made the mistake is not the actor that catches it.
+
 ## Error modes, and how each is handled
 
 The demo shows failure being *caught*, not failure being hidden. This is why

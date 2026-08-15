@@ -40,34 +40,16 @@ Honest accounting, because a "zero human company" claim invites scrutiny:
 | Stripe: collect real revenue | In progress |
 | Trust boundary: firm ⟷ client across separate repos | Enforced by GitHub permissions today |
 
-## Two actors, three tiers of trust
+## Two actors
 
 This repo is **the firm**. Its counterparty lives in a separate repository,
 [`2026-08-15-SF-0HumanCompanyHack-client`](https://github.com/qte77/2026-08-15-SF-0HumanCompanyHack-client),
-and is treated as an untrusted external party.
-
-```
-TIER 0 — ZERO TRUST     firm ⟷ client
-  enforced by GitHub account permissions. Channel: pull request only.
-  No shared secrets, no shared runner.
-
-TIER 1 — PARTIAL TRUST  Builder ⟷ Integrator, within a repo
-  enforced by branch protection + scoped PATs + CODEOWNERS.
-  Builder pushes branches and cannot merge. Integrator merges and
-  does not author product code.
-
-TIER 2 — FULL TRUST     subagents inside one actor's worktree
-  enforced by nothing. Disjoint write surfaces by convention.
-```
+and is treated as an untrusted external party. They share no secrets and no
+runner; the only channel between them is a pull request.
 
 Every artifact crossing a boundary is verified by an identity that did not
-produce it. That is the mechanism, not a slogan: independent agent topologies
-amplify errors 17.2×, centralized ones 4.4×, and the difference is precisely
-this verification step ([arXiv:2512.08296](https://arxiv.org/abs/2512.08296)).
-
-Tier 1 is real but revocable — both credentials are minted by the same account.
-We claim it as *more* trust, not full trust, and say so rather than overselling
-it.
+produce it. Full trust model, enforcement mechanisms, and the evidence behind
+them: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#trust-model).
 
 ## Settlement across the trust boundary
 
