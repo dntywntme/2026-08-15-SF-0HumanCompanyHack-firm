@@ -11,7 +11,11 @@ The point is not that agents replace humans. It is that a company run by agents
 still has to **make a hard call about what it does not know** — and pay for the
 answer. That call, and its unit economics, are what this repo demonstrates.
 
+- **Live dashboard:** <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/>
+- **Live ledger (JSON):** <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json>
+- **Counterparty repo:** [`…-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client) — the assistant agent that orders, judges, and pays
 - **Architecture and the evidence behind it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- **Diagrams and file cross-reference:** [`docs/FLOWS.md`](docs/FLOWS.md)
 - **What was submitted, and to which tracks:** [`SUBMISSION.md`](SUBMISSION.md)
 - **How to run the demo, including the offline fallback:** [`docs/DEMO.md`](docs/DEMO.md)
 

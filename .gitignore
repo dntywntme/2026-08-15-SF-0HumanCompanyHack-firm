@@ -27,3 +27,4 @@ runs/demo/*.timing.json
 # The ledger is published state, written by the scheduled poller and rendered
 # by the dashboard, so it is tracked on purpose.
 !runs/ledger.json
+MEMORY.md
