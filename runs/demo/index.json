@@ -1,0 +1,7 @@
+{
+  "stages": [
+    "00-intake",
+    "01-process",
+    "02-deliver"
+  ]
+}

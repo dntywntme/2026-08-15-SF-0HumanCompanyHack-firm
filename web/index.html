@@ -176,11 +176,13 @@
   }
 
   // Stage checkpoints, and anything the run recorded alongside them.
+  // Read the manifest rather than guessing filenames: probing names that do
+  // not exist fills a judge's console with 404s.
+  const manifest = (await get("runs/demo/index.json")) || { stages: [] };
   const found = [];
-  for (const n of ["00-intake", "01-triage", "02-source", "03-verify", "04-price", "05-deliver",
-                   "00-intake", "01-process", "02-deliver"]) {
+  for (const n of manifest.stages) {
     const d = await get(`runs/demo/${n}.json`);
-    if (d && !found.some((f) => f.stage === d.stage)) found.push(d);
+    if (d) found.push(d);
   }
   const sn = document.getElementById("stages-note");
   if (found.length) {

@@ -82,7 +82,19 @@ def main() -> int:
     else:
         charges, source = fetch_charges(key)
 
-    ledger = {"source": source, **summarize(charges)}
+    # Cost of goods actually committed to humans via Terac. Reported alongside
+    # revenue so the published margin is revenue minus real spend, not revenue
+    # minus zero. "Committed" rather than "paid": the money is spent when the
+    # study launches; individual experts are paid on approval.
+    try:
+        cogs = Decimal(os.environ.get("COGS_COMMITTED_USD", "0").strip() or "0")
+    except (ValueError, ArithmeticError):
+        cogs = Decimal("0")
+    ledger = {
+        "source": source,
+        "cogs_usd": str(cogs.quantize(Decimal("0.01"))),
+        **summarize(charges),
+    }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {OUT}: {ledger['transactions']} txn, {ledger['revenue_usd']} USD ({source})")

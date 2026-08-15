@@ -31,6 +31,9 @@ jobs:
         env:
           # Restricted key: Balance=Read, Charges=Read. Never an sk_ key.
           STRIPE_RESTRICTED_KEY: ${{ secrets.STRIPE_RESTRICTED_KEY }}
+          # Real money committed to humans via Terac, so the published margin is
+          # revenue minus real spend rather than revenue minus zero.
+          COGS_COMMITTED_USD: "9.00"
         # The poller degrades rather than failing, so a Stripe outage cannot
         # take the published page down.
         run: python3 scripts/poll_ledger.py
@@ -41,7 +44,7 @@ jobs:
         run: |
           git config user.name "broker-bot"
           git config user.email "broker-bot@users.noreply.github.com"
-          git add runs/ledger.json
+          git add runs/ledger.json runs/demo/index.json
           git diff --staged --quiet || git commit -m "chore(ledger): refresh"
           git push origin HEAD:main
 
