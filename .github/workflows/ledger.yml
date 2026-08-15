@@ -40,5 +40,5 @@ jobs:
           git config user.name "broker-bot"
           git config user.email "broker-bot@users.noreply.github.com"
           git add runs/ledger.json
-          git diff --staged --quiet || git commit -m "chore(ledger): refresh [skip ci]"
+          git diff --staged --quiet || git commit -m "chore(ledger): refresh"
           git push origin HEAD:main
