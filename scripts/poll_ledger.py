@@ -73,9 +73,10 @@ def summarize(charges: list[dict]) -> dict:
 
 def main() -> int:
     key = os.environ.get("STRIPE_RESTRICTED_KEY", "").strip()
-    # An unset secret arrives as the empty string, and the placeholder prefixes
-    # are what .env.example ships; treat both as "no key".
-    if not key or key in {"rk_live_", "rk_test_"}:
+    # An unset secret arrives as the empty string; a bare prefix is a half-filled
+    # placeholder. Treat both as "no key" and degrade rather than calling Stripe
+    # with something that cannot work.
+    if not key or key in {"rk_live_", "rk_test_", "rk_"}:
         print("no restricted key configured; writing empty ledger", file=sys.stderr)
         charges, source = [], "unavailable"
     else:
