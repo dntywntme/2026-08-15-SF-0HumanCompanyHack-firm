@@ -32,8 +32,9 @@ jobs:
           # Restricted key: Balance=Read, Charges=Read. Never an sk_ key.
           STRIPE_RESTRICTED_KEY: ${{ secrets.STRIPE_RESTRICTED_KEY }}
           # Real money committed to humans via Terac, so the published margin is
-          # revenue minus real spend rather than revenue minus zero.
-          COGS_COMMITTED_USD: "9.00"
+          # revenue minus real spend rather than revenue minus zero. Two studies
+          # at $9.00 each: 4 participants at the $4.50 CPI Terac quoted.
+          COGS_COMMITTED_USD: "18.00"
         # The poller degrades rather than failing, so a Stripe outage cannot
         # take the published page down.
         run: python3 scripts/poll_ledger.py

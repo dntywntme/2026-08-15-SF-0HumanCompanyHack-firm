@@ -123,7 +123,7 @@ honest fit rather than a bolt-on.
                                      │                              │
                                      │                        poll_ledger.py
                                      │                              ▼
-    ◀──── assistant reports ─────────┘                        revenue $1.00
+    ◀──── assistant reports ─────────┘                        revenue $4.00
                                                               live on the P&L
 ```
 

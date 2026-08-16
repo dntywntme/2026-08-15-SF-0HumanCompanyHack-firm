@@ -7,7 +7,7 @@
 |---|---|
 | Team | `agentrun-inc` |
 | Project | **Broker** |
-| Tagline | *An agent-run company that buys human judgement, marks it up, and sells the result.* |
+| Tagline | *An agent-run company and the agent that hires it — two repos, no human at either end, and the only humans in the loop are the ones it pays for judgement.* |
 | Repo | <https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm> |
 | Counterparty repo | <https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client> |
 | Live | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/> |
@@ -29,13 +29,15 @@ under a standing mandate. **No human works at either end of the transaction.**
 
 | | |
 |---|---|
-| Terac study | **Live.** $9.00 committed, 2 participants, 19 applicants screened |
-| Stripe | **$1.00 settled** by the client agent, unattended, in GitHub Actions |
-| Decisions published | **8**, each with what it rejected and what it cost |
-| Balance moved | Terac $125.00 → $116.00 |
+| Terac studies | **Two, both fulfilled.** $18.00 committed, 4 participants paid, 30 applicants screened |
+| Stripe | **$4.00 settled** across 4 charges by the client agent, unattended, in GitHub Actions |
+| Decisions published | **9**, each with what it rejected and what it cost |
+| Balance moved | Terac $125.00 → $107.00 |
 
 The agent wrote the job spec, set the budget, reviewed the work, and authorised
 payment. `approve_submission` is the agent deciding whether a human gets paid.
+The second study went further: the agent created *and* launched it on its own,
+so the decision to spend another $9.00 on human judgement was never ours.
 
 ## The hero frame
 
@@ -45,11 +47,11 @@ capped the price at a dollar while human judgement costs $4.50 a head.
 
 ```
     LEDGER                                  UNIT ECONOMICS
-    Revenue                     $1.00       Price per verdict          $1.00
-    Cost of goods              -$9.00       Model inference (open-wt)  $0.01
+    Revenue                     $4.00       Price per verdict          $1.00
+    Cost of goods             -$18.00       Model inference (open-wt)  $0.01
     ─────────────────────────────────       ───────────────────────────────
-    Margin (at event pricing)  -$8.00       Gross margin                 99%
-    1 settled · live from Stripe
+    Margin (at event pricing) -$14.00       Gross margin                 99%
+    4 settled · live from Stripe
 ```
 
 A company selling below cost in public, so the cost is visible.
@@ -118,9 +120,11 @@ published measurement rather than preference (see
 Stated because the omissions are decisions, not gaps.
 
 - **Pioneer** — the classifier is built and pinned to an open-weight model
-  (`Qwen/Qwen3-8B`), but inference returns 403 despite an active Pro plan. No
-  model ran, so we do not claim a track whose criterion is that one did. The
-  code degrades to a pessimistic heuristic instead of failing.
+  (`Qwen/Qwen3-8B`), but every inference call returned **404**, with a valid API
+  key and a redeemed voucher on the account. We could not get a single
+  completion back, so we do not claim a track whose criterion is that an
+  open-weight model ran. The code degrades to a pessimistic heuristic instead of
+  failing, which is why the pipeline still completes without it.
 - **Linq** — the track rewards a real phone number on iMessage and we chose not
   to route inbound messages to a personal one. There is no honest partial claim.
 - **Band** — we ran out of time to integrate it properly, and a partial
@@ -142,9 +146,9 @@ Stated because the omissions are decisions, not gaps.
 
 ## How the money actually moved
 
-**Out to humans: real.** $9.00 of incentive committed to two people, funded by
-hackathon credit rather than our own capital. That changes whose money it is,
-not whether a person gets paid.
+**Out to humans: real.** $18.00 of incentive committed across two studies to
+four people at $4.50 a head, funded by hackathon credit rather than our own
+capital. That changes whose money it is, not whether a person gets paid.
 
 **In from customers: sandboxed.** Stripe runs in a sandbox, so the charge is a
 test-mode object. The path is real and exercised end to end — the client agent

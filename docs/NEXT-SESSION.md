@@ -9,8 +9,8 @@ is verified against the state at that moment; check it still holds before acting
 |---|---|
 | Firm site | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/> |
 | Client site | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/> |
-| Terac | Study `e39vxoxasopgrblq6tchgf68` **fulfilled** — $9.00 paid to 2 people, 22 screened, balance $125 → $116 |
-| Stripe | $1.00 settled by the client agent, unattended, **sandbox** (`livemode: false`) |
+| Terac | Two studies **fulfilled** (`e39vxoxasopgrblq6tchgf68`, `w4pxs0mrufeqo9kzuruzsvui`) — $18.00 paid to 4 people at $4.50 CPI, 30 screened (22 + 8), balance $125 → $107. Study #2 was created *and* launched by the agent |
+| Stripe | $4.00 settled across 4 charges by the client agent, unattended, **sandbox** (`livemode: false`) |
 | Tests | firm 49, client 22, ruff clean |
 | Replay | Byte-identical on the recorded tier with no keys |
 | CI | ci · pages · ledger (firm), pages · pay (client) — all green |
@@ -75,15 +75,19 @@ dashboard-only, which the adapter already documents.
 
 ## 3. Honesty items to close
 
-- **The Issues channel has never been exercised.** The firm repo has zero
-  issues and no `issues.opened` workflow. `channel.py` works and is tested, but
-  the README calls the Issue "the only channel between them", which overstates
-  it. Either wire the workflow or soften the claim.
-- `adapters/pioneer.py` is effectively dead while Pioneer returns 403 despite an
-  active Pro plan. Either get the entitlement fixed or delete the adapter.
-- The two Terac approvals happened in the dashboard, not through
-  `approve_submission`. The payment is real; the decision was not exercised
-  through the API.
+- **The Issues channel is now exercised, but unevenly.** `intake.yml` is wired
+  and firm issue #2 carries a full bot reply with the decision list. Issue #1,
+  opened 19 seconds earlier, got **no reply at all** — so a judge opening the
+  Issues tab sees one customer order that was ignored. Find out why intake
+  skipped it, and close both once the orders are delivered.
+- Both work orders are titled `order: wo-1`. The client reuses the same id for
+  different questions, which reads as a bug in work-order identity.
+- `adapters/pioneer.py` is effectively dead: every inference call returned
+  **404** with a valid API key and a redeemed voucher on the account. Either get
+  it answering or delete the adapter.
+- The four Terac approvals happened in the dashboard, not through
+  `approve_submission`. The payment is real; the approval decision was not
+  exercised through the API. Study #2's *launch*, by contrast, was the agent's.
 
 ## 4. The client repo specifically
 
@@ -118,7 +122,7 @@ Frame them as mandate profiles, never as simulated people.
    as prose inside a decision's `because`.
 2. **Real participant quotes** — the task responses are dashboard-only; paste
    them into `HUMAN_INPUT.responses` and regenerate the golden run.
-3. **Money-flow strip** — one proportional bar, `IN $1.00 ▏ OUT $9.00`, so the
+3. **Money-flow strip** — one proportional bar, `IN $4.00 ▏ OUT $18.00`, so the
    negative margin reads instantly instead of needing a paragraph.
 4. **Confidence gauge** on the triage row. The threshold crossing is the whole
    thesis and is currently prose.
