@@ -85,7 +85,33 @@ dashboard-only, which the adapter already documents.
   `approve_submission`. The payment is real; the decision was not exercised
   through the API.
 
-## 4. Worth building next, in order
+## 4. The client repo specifically
+
+It was built last and shows it. Nothing is broken, but three things are thinner
+than the firm side.
+
+- **`web/activity.json` is hand-written.** The client page renders a static
+  record of what the agent did rather than something the agent emitted. Have
+  `agent.py` write it on each run — same shape, no page change — and the client
+  surface becomes generated rather than asserted.
+- **The client UI has no test coverage.** The firm's e2e sweep at
+  `/tmp/uitest/e2e.js` covers the firm's two views across six viewports; the
+  client page was checked once by hand. Add it to the same suite: the
+  reconciliation step (does it read the firm's ledger?) is the assertion worth
+  having, because it is the cross-repo claim.
+- **Styles are duplicated between the two pages.** The mobile grid bug was fixed
+  on the firm page and shipped broken on the client for an hour because the
+  `.step` rules exist twice. Either vendor a shared stylesheet into both, or
+  accept the duplication deliberately and note it.
+
+Longer term, the client is where the societies.io-shaped idea would go: replace
+the single `evaluate()` with a handful of mandate profiles differing on risk
+tolerance and price sensitivity, and pay on quorum rather than one boolean. That
+adds a distribution of judgement to the demand side only, so Terac stays the
+sole source of *human* judgement and the mandatory requirement is untouched.
+Frame them as mandate profiles, never as simulated people.
+
+## 4b. Worth building next, in order
 
 1. **Before/after panel** — agent draft beside the human verdict, difference
    highlighted. It is the mandatory Terac deliverable and currently only appears
