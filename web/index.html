@@ -24,6 +24,36 @@
   .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
   .mono { font-family: var(--font-mono); font-size: .85rem; }
   [hidden] { display: none !important; }
+  /* The kit ships a .shell but the page never used it: without a gutter the
+     hero touched x=0 on a phone and ran an unreadable measure on desktop. */
+  .app-main { max-width: 1120px; margin-inline: auto; padding-inline: 24px; }
+  .app-header .brand { padding-inline: 24px; }
+  .app-sub { max-width: 68ch; }
+  .app-title { font-size: clamp(2rem, 3.4vw + 1rem, 2.9rem); line-height: 1.1; }
+
+  /* Agent activity: one row per stage, colour carries meaning only. */
+  .flow { display: grid; gap: 0; }
+  .step { display: grid; grid-template-columns: 1.6rem 8.5rem 1fr auto; gap: .75rem;
+          align-items: start; padding: .7rem 0; border-top: 1px solid var(--border); }
+  .step:first-child { border-top: 0; }
+  .dot { width: .7rem; height: .7rem; border-radius: 50%; margin-top: .4rem;
+         background: var(--primary); box-shadow: 0 0 0 3px var(--glow); }
+  .dot.spend { background: var(--danger); }
+  .dot.pay   { background: var(--star); }
+  .dot.hold  { background: var(--text-muted); }
+  .stage-name { font-family: var(--font-mono); font-size: .8rem; color: var(--text-muted);
+                text-transform: uppercase; letter-spacing: .04em; margin-top: .15rem; }
+  .chose { font-weight: 700; }
+  .why { color: var(--text-muted); font-size: .92rem; margin: .15rem 0 0; }
+  .rejected { font-family: var(--font-mono); font-size: .78rem; color: var(--text-muted);
+              margin: .3rem 0 0; opacity: .85; }
+  .amt { font-family: var(--font-mono); font-weight: 700; white-space: nowrap; }
+  .amt.spend { color: var(--danger); }
+  .amt.zero  { color: var(--text-muted); font-weight: 400; }
+  .legend { display: flex; gap: 1rem; flex-wrap: wrap; font-family: var(--font-mono);
+            font-size: .78rem; color: var(--text-muted); margin-top: .75rem; }
+  .legend span { display: inline-flex; align-items: center; gap: .35rem; }
+  .key { width: .6rem; height: .6rem; border-radius: 50%; display: inline-block; }
 </style>
 </head>
 <body>
@@ -50,11 +80,11 @@
   </div>
 
   <div class="chart-card">
-    <p><strong>How to answer:</strong> your choice and your reason are collected in
-    the questions Terac asked you, so there is nothing to submit here. When you
-    have answered them, use the button below to mark this task complete.</p>
+    <p><strong>Step 1 &mdash; answer in Terac.</strong> Your choice and your reason
+    are collected in the Terac questions, not on this page.</p>
+    <p><strong>Step 2 &mdash;</strong> once you have answered them there, click below.</p>
     <p class="row">
-      <a id="complete" class="btn btn--primary" href="#">Mark task complete</a>
+      <a id="complete" class="btn btn--primary" href="#">I&rsquo;ve answered &mdash; mark complete</a>
       <span class="mono muted" id="sub"></span>
     </p>
   </div>
@@ -85,7 +115,7 @@
         <dt>Revenue</dt>          <dd id="rev">&mdash;</dd>
         <dt>Cost of goods</dt>    <dd id="cogs">&mdash;</dd>
         <div class="rule"></div>
-        <dt><strong>Margin</strong></dt> <dd><span id="margin" class="big">&mdash;</span></dd>
+        <dt><strong>Margin</strong> <span class="muted">(at event pricing)</span></dt> <dd><span id="margin" class="big">&mdash;</span></dd>
       </dl>
       <p class="mono muted" id="ledger-note">loading&hellip;</p>
       <p class="mono muted">
@@ -116,8 +146,15 @@
 
   <section class="chart-card">
     <h2 class="chart-title">Decisions</h2>
-    <p class="muted">Every judgement the company made, and what it rejected. No human appears in any of them.</p>
-    <p class="empty" id="decisions">No run published yet.</p>
+    <p class="muted">Every judgement the company made, in order, with what it rejected and what it cost. No human appears in any of them.</p>
+    <div class="flow" id="decisions"></div>
+    <p class="empty" id="decisions-empty">No run published yet.</p>
+    <div class="legend">
+      <span><i class="key" style="background:var(--primary)"></i> judgement</span>
+      <span><i class="key" style="background:var(--danger)"></i> commits money</span>
+      <span><i class="key" style="background:var(--star)"></i> pays a human</span>
+      <span><i class="key" style="background:var(--text-muted)"></i> refused / held</span>
+    </div>
   </section>
 
   <section class="chart-card">
@@ -129,7 +166,7 @@
   <section class="chart-card">
     <h2 class="chart-title">Incidents</h2>
     <p class="muted">Failures the company caught, and what it did about them.</p>
-    <p class="empty" id="incidents">None recorded.</p>
+    <p class="empty" id="incidents">No failures in this run.</p>
   </section>
 </section>
 
@@ -156,7 +193,10 @@
     return;
   }
 
-  const money = (s) => `$${Number(s ?? 0).toFixed(2)}`;
+  const money = (s) => {
+    const n = Number(s ?? 0);
+    return `${n < 0 ? "-" : ""}$${Math.abs(n).toFixed(2)}`;
+  };
   const get = async (p) => {
     try { const r = await fetch(p, { cache: "no-store" }); return r.ok ? await r.json() : null; }
     catch { return null; }
@@ -170,7 +210,7 @@
     const rev = Number(ledger.revenue_usd ?? 0);
     const cogs = Number(ledger.cogs_usd ?? 0);
     document.getElementById("rev").textContent = money(rev);
-    document.getElementById("cogs").textContent = `-${money(cogs)}`;
+    document.getElementById("cogs").textContent = money(-cogs);
     const m = document.getElementById("margin");
     m.textContent = money(rev - cogs);
     m.className = "big " + (rev - cogs < 0 ? "neg" : "pos");
@@ -200,17 +240,33 @@
       c.textContent = s.stage;
       chips.appendChild(c);
     }
-    const decisions = found.flatMap((s) => s.output?.decisions ?? []);
+    // Each checkpoint carries the cumulative log, so the last one is the whole run.
+    const decisions = found.at(-1)?.output?.decisions ?? [];
     if (decisions.length) {
-      const el = document.getElementById("decisions");
-      el.className = "";
-      el.innerHTML = decisions.map((d) =>
-        `<div class="hl" style="margin-bottom:.5rem"><h3>${d.chose} <span class="muted mono">${d.kind}</span></h3>
-         <p>${d.because}</p>
-         <p class="mono muted">rejected: ${(d.rejected ?? []).join(", ")} · cost ${money(d.cost_usd)}</p></div>`
-      ).join("");
+      document.getElementById("decisions-empty").remove();
+      const cls = (d) => {
+        if (d.kind === "pay_worker") return "pay";
+        if (Number(d.cost_usd) > 0) return "spend";
+        if (d.kind === "spend_guard" || d.chose.startsWith("refuse")) return "hold";
+        return "";
+      };
+      document.getElementById("decisions").innerHTML = decisions.map((d) => {
+        const amt = Number(d.cost_usd) > 0
+          ? `<span class="amt spend">-${money(d.cost_usd)}</span>`
+          : `<span class="amt zero">&mdash;</span>`;
+        return `<div class="step">
+          <i class="dot ${cls(d)}"></i>
+          <div class="stage-name">${d.stage}</div>
+          <div>
+            <div class="chose">${d.chose}</div>
+            <p class="why">${d.because}</p>
+            <p class="rejected">rejected: ${(d.rejected ?? []).join(" &middot; ")}</p>
+          </div>
+          ${amt}
+        </div>`;
+      }).join("");
     }
-    const incidents = found.flatMap((s) => s.output?.incidents ?? []);
+    const incidents = found.at(-1)?.output?.incidents ?? [];
     if (incidents.length) {
       const el = document.getElementById("incidents");
       el.className = "";
