@@ -24,6 +24,13 @@
   .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
   .mono { font-family: var(--font-mono); font-size: .85rem; }
   [hidden] { display: none !important; }
+  @media (max-width: 560px) {
+    /* The fixed 4-column step grid clipped the amount mid-glyph on a phone. */
+    .step { grid-template-columns: 1.1rem 1fr auto; }
+    .step .stage-name, .step .who { grid-column: 2 / -1; }
+    .pnl { grid-template-columns: 1fr auto; }
+    .big { font-size: 1.3rem; }
+  }
   /* The kit ships a .shell but the page never used it: without a gutter the
      hero touched x=0 on a phone and ran an unreadable measure on desktop. */
   .app-main { max-width: 1120px; margin-inline: auto; padding-inline: 24px; }
@@ -215,7 +222,7 @@
     m.textContent = money(rev - cogs);
     m.className = "big " + (rev - cogs < 0 ? "neg" : "pos");
     note.textContent = ledger.source === "stripe"
-      ? `${ledger.transactions} settled · ${ledger.failed} failed · ${ledger.refunded} refunded · live from Stripe`
+      ? `${ledger.transactions} settled · ${ledger.failed} failed · ${ledger.refunded} refunded · from Stripe (sandbox)`
       : "Stripe unreachable — showing last known state.";
   } else {
     note.textContent = "No ledger published yet.";

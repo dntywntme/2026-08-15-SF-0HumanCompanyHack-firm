@@ -40,20 +40,20 @@
         "stage": "source"
       },
       {
-        "because": "the live study returned approved submissions",
-        "chose": "terac tier",
+        "because": "no live source reachable; replayed the last known-good result",
+        "chose": "recorded tier",
         "cost_usd": "0.00",
         "kind": "buy_labor",
         "question": "where should this judgement come from?",
         "rejected": [
-          "human",
-          "recorded"
+          "terac",
+          "human"
         ],
         "reversible": true,
         "stage": "source"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'The price or a discount'",
+        "because": "on-topic, gives a reason, and answers the question asked: 'B \u2014 it says what it does for me, not what it is.'",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -66,7 +66,7 @@
         "stage": "verify"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'How the product described itself'",
+        "because": "on-topic, gives a reason, and answers the question asked: \"B \u2014 'ship faster' is on every landing page I have ever seen.\"",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -79,7 +79,7 @@
         "stage": "verify"
       },
       {
-        "because": "0 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
+        "because": "2 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
         "chose": "no \u2014 the panel contradicts the draft",
         "cost_usd": "0.00",
         "kind": "self_assess",
@@ -105,7 +105,15 @@
         "stage": "price"
       }
     ],
-    "incidents": [],
+    "incidents": [
+      {
+        "category": "tool_failure",
+        "detail": "live panel unavailable; used the recorded tier",
+        "errors": [],
+        "recovery": "answered from the best judgement available and labelled it as such",
+        "stage": "source"
+      }
+    ],
     "price_usd": "1.00",
     "stage": "price"
   },

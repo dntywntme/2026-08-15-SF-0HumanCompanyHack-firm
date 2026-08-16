@@ -101,8 +101,9 @@ receiving it; the two pages agree without sharing a database.
 ## Tracks claimed
 
 **Best Overall Agent-Run Company** — revenue settled by an agent with no human in
-the loop, real money committed to real people, and a live P&L that shows the
-loss as readily as the gain.
+the loop (in a Stripe sandbox, labelled as such on the site), real money paid to
+real people through Terac, and a live P&L that shows the loss as readily as the
+gain.
 
 **Best Overall Project** — a deterministic harness with turn caps, wall-clock
 timeouts, checkpointed replay, an enforced spend guard, a credential-scoped

@@ -39,9 +39,9 @@ Honest accounting, because a "zero human company" claim invites scrutiny:
 | Component | State |
 |---|---|
 | Deterministic harness: stages, turn cap, wall-clock timeout, checkpoints, replay | **Built, tested, green** |
-| Error-mode instrumentation (Pydantic validation → visible recovery) | In progress |
-| Terac MCP: buy human expertise, measure before/after | In progress |
-| Stripe: collect real revenue | In progress |
+| Error-mode instrumentation (Pydantic validation → visible recovery) | **Built** |
+| Terac MCP: buy human expertise, measure before/after | **Live** — study fulfilled, $9.00 paid to 2 people |
+| Stripe: collect revenue | **Live in sandbox** — $1.00 settled by the client agent, unattended |
 | Trust boundary: firm ⟷ client across separate repos | Enforced by credential scope today |
 
 ## Two actors
