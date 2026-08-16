@@ -40,7 +40,20 @@
         "stage": "source"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'B \u2014 it says what it does for me, not what it is.'",
+        "because": "the live study returned approved submissions",
+        "chose": "terac tier",
+        "cost_usd": "0.00",
+        "kind": "buy_labor",
+        "question": "where should this judgement come from?",
+        "rejected": [
+          "human",
+          "recorded"
+        ],
+        "reversible": true,
+        "stage": "source"
+      },
+      {
+        "because": "on-topic, gives a reason, and answers the question asked: 'The price or a discount'",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -53,7 +66,7 @@
         "stage": "verify"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: \"B \u2014 'ship faster' is on every landing page I have ever seen.\"",
+        "because": "on-topic, gives a reason, and answers the question asked: 'How the product described itself'",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -66,7 +79,7 @@
         "stage": "verify"
       },
       {
-        "because": "2 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
+        "because": "0 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
         "chose": "no \u2014 the panel contradicts the draft",
         "cost_usd": "0.00",
         "kind": "self_assess",

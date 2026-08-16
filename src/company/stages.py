@@ -16,6 +16,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
+from company.adapters.terac import obtain_human_input
 from company.decisions import DecisionLog
 from company.harness import RunContext, Stage
 from company.incidents import IncidentLog, summarize_validation_error
@@ -156,8 +157,36 @@ def source(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         return {"stage": "source", "human": None, "cogs_usd": "0.00", **_render(state)}
 
     ctx.spend_turn()
-    human = state.get("human", HUMAN_INPUT)
-    return {"stage": "source", "human": human, "cogs_usd": human["cost_usd"], **_render(state)}
+    # Three tiers: live Terac, a human override, then the recorded floor. Each
+    # stamps its own source, so the checkpoint always says which one answered.
+    human = state.get("human") or obtain_human_input(HUMAN_INPUT)
+    tier = human.get("source", "recorded")
+    if tier != "terac":
+        incidents.record(
+            "tool_failure",
+            "source",
+            f"live panel unavailable; used the {tier} tier",
+            "answered from the best judgement available and labelled it as such",
+        )
+    decisions.record(
+        "buy_labor",
+        "source",
+        "where should this judgement come from?",
+        f"{tier} tier",
+        {
+            "terac": "the live study returned approved submissions",
+            "human": "a person supplied judgement the API could not",
+            "recorded": "no live source reachable; replayed the last known-good result",
+        }[tier],
+        rejected=[t for t in ("terac", "human", "recorded") if t != tier],
+    )
+    return {
+        "stage": "source",
+        "human": human,
+        "source_tier": tier,
+        "cogs_usd": human["cost_usd"],
+        **_render(state),
+    }
 
 
 def verify(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:

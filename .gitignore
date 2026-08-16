@@ -28,3 +28,4 @@ runs/demo/*.timing.json
 # by the dashboard, so it is tracked on purpose.
 !runs/ledger.json
 MEMORY.md
+runs/human_override.json
