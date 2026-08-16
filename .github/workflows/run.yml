@@ -1,0 +1,101 @@
+name: run
+
+# The company doing a full turn of work, unattended: six stages, live sourcing
+# from Terac, decisions recorded, and the result published to the dashboard.
+#
+# This is the leg that makes the pipeline autonomous rather than replayed. It
+# READS the study's submissions, which costs nothing. It never creates or
+# launches a study — that spends real money and stays a human decision, once.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Run identifier (also the published run)"
+        required: true
+        default: "demo"
+  schedule:
+    # Hourly is plenty: the panel does not change minute to minute, and every
+    # run rewrites the published artifact.
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: run
+  cancel-in-progress: false
+
+jobs:
+  work:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+
+      - run: uv sync
+
+      - name: Run the pipeline
+        env:
+          # Tier 1. Without it the run degrades to the recorded tier and says so
+          # in the checkpoint rather than failing.
+          TERAC_API_KEY: ${{ secrets.TERAC_API_KEY }}
+          PIONEER_API_KEY: ${{ secrets.PIONEER_API_KEY }}
+        run: uv run company --run-id "${{ inputs.run_id || 'demo' }}"
+
+      - name: Report which tier answered
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          d = pathlib.Path("runs/${{ inputs.run_id || 'demo' }}")
+          src = sorted(p for p in d.glob("*.json")
+                       if "timing" not in p.name and p.stem != "index")
+          last = json.loads(src[-1].read_text())["output"]
+          tier = next((s for s in (json.loads(p.read_text())["output"]
+                                   for p in src) if "source_tier" in s), {})
+          print(f"tier={tier.get('source_tier','?')} "
+                f"decisions={len(last.get('decisions', []))} "
+                f"incidents={len(last.get('incidents', []))}")
+          PY
+
+      - name: Refresh the stage manifest
+        # The dashboard reads this rather than guessing filenames.
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          d = pathlib.Path("runs/${{ inputs.run_id || 'demo' }}")
+          stages = sorted(p.stem for p in d.glob("*.json")
+                          if "timing" not in p.name and p.stem != "index")
+          (d / "index.json").write_text(json.dumps({"stages": stages}, indent=2) + "\n")
+          PY
+
+      - name: Commit the run
+        run: |
+          git config user.name "broker-bot"
+          git config user.email "broker-bot@users.noreply.github.com"
+          git add runs/
+          git diff --staged --quiet || git commit -m "chore(run): ${{ inputs.run_id || 'demo' }}"
+          git push origin HEAD:main
+
+      # A push made with the default GITHUB_TOKEN does not trigger another
+      # workflow, so this publishes the site itself.
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -r web/. _site/
+          mkdir -p _site/runs
+          cp -r runs/. _site/runs/ 2>/dev/null || true
+          touch _site/.nojekyll
+          test -f _site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4
