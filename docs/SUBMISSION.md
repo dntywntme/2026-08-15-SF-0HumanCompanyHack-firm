@@ -123,12 +123,20 @@ Stated because the omissions are decisions, not gaps.
   code degrades to a pessimistic heuristic instead of failing.
 - **Linq** — the track rewards a real phone number on iMessage and we chose not
   to route inbound messages to a personal one. There is no honest partial claim.
-- **Band** — our two agents already coordinate, through a public GitHub Issue
-  thread that anyone can audit. Adding Band would either duplicate that channel
-  (decorative, which their own criteria reject) or replace it with a room a
-  judge cannot inspect.
-- **Superserve** — nothing in our pipeline runs long enough to pause. Claiming
-  it would be a bolt-on.
+- **Band** — we ran out of time to integrate it properly, and a partial
+  integration would have failed their own bar: *"remove the room and the app
+  should break, not keep working the same way."* What we do instead is
+  coordinate the two agents through a **public GitHub Issue thread** — the
+  client opens a work order as fenced JSON, the firm replies as a comment.
+  Every message is permanently auditable by anyone, with no vendor in the path.
+  Band would have been the better-instrumented version of that; the audit trail
+  is the version we could ship and verify today.
+- **Superserve** — same constraint, and nothing in our pipeline runs long enough
+  to pause. What we do instead is degrade in three labelled tiers when a
+  long-running dependency is slow: live Terac, then a human override file, then
+  the recorded floor. The checkpoint always says which tier answered. Superserve
+  would let us pause and resume rather than degrade, which is strictly better,
+  and it is the first thing we would add with another day.
 - **Render, Perflo** — dropped when the stack went GitHub-native; Perflo never
   authenticated.
 

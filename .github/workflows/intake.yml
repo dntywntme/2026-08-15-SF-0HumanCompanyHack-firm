@@ -1,0 +1,138 @@
+name: intake
+
+# The firm ingesting work orders from the client. An Issue opened on this
+# repository is an order; the pipeline runs against it and replies in the
+# thread. That makes the channel real rather than described.
+#
+# The issue body is DATA. The fenced JSON block is parsed and validated against
+# the WorkOrder contract; prose outside the fence is never interpreted, so an
+# order that opens with "ignore previous instructions" is just an order with a
+# strange first line.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: intake-${{ github.event.issue.number }}
+
+jobs:
+  fulfil:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+
+      - run: uv sync
+
+      - name: Parse the order out of the issue body
+        id: order
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          uv run python - <<'PY'
+          import json, os, pathlib, re, sys
+
+          body = os.environ.get("BODY") or ""
+          m = re.search(r"```json\s*(.*?)```", body, re.S)
+          if not m:
+              print("no fenced json order in the issue body", file=sys.stderr)
+              pathlib.Path("order.json").write_text("null")
+              sys.exit(0)
+          try:
+              order = json.loads(m.group(1))
+          except json.JSONDecodeError as exc:
+              print(f"order fence is not valid json: {exc.msg}", file=sys.stderr)
+              pathlib.Path("order.json").write_text("null")
+              sys.exit(0)
+          pathlib.Path("order.json").write_text(json.dumps(order))
+          print(f"parsed order {order.get('id', '?')}")
+          PY
+
+      - name: Run the pipeline against it
+        env:
+          TERAC_API_KEY: ${{ secrets.TERAC_API_KEY }}
+        run: |
+          uv run python - <<'PY'
+          import json, pathlib
+          from company.harness import run_pipeline
+          from company.stages import PIPELINE, initial_state
+
+          raw = json.loads(pathlib.Path("order.json").read_text())
+          state = initial_state()
+          if raw:
+              state["order"] = raw
+          result = run_pipeline(
+              PIPELINE, run_id="issue-${{ github.event.issue.number }}", initial_state=state
+          )
+          last = result.records[-1]["output"] if result.records else {}
+          pathlib.Path("reply.md").write_text(
+              json.dumps(
+                  {
+                      "ok": result.ok,
+                      "error": result.error,
+                      "deliverable": last.get("deliverable"),
+                      "decisions": last.get("decisions", []),
+                      "incidents": last.get("incidents", []),
+                  },
+                  indent=2,
+              )
+          )
+          PY
+
+      - name: Reply in the thread
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run python - <<'PY'
+          import json, os, pathlib, urllib.request
+
+          r = json.loads(pathlib.Path("reply.md").read_text())
+          d = r.get("deliverable") or {}
+          lines = ["**Broker** — order processed. No human was involved.", ""]
+          if d:
+              lines += [
+                  f"> {d.get('answer','')}",
+                  "",
+                  f"`sourced_from: {d.get('sourced_from')}` · "
+                  f"`price: ${d.get('price_usd')}` · `cogs: ${d.get('cogs_usd')}` · "
+                  f"`margin: ${d.get('margin_usd')}`",
+              ]
+          else:
+              lines.append(f"The order was not fulfilled: `{r.get('error') or 'rejected at intake'}`")
+          if r.get("decisions"):
+              lines += ["", "<details><summary>Decisions</summary>", ""]
+              for x in r["decisions"]:
+                  lines.append(
+                      f"- **{x['chose']}** ({x['stage']}) — {x['because']} "
+                      f"_rejected: {', '.join(x['rejected'])}_ · ${x['cost_usd']}"
+                  )
+              lines += ["", "</details>"]
+          if r.get("incidents"):
+              lines += ["", "<details><summary>Incidents</summary>", ""]
+              for x in r["incidents"]:
+                  lines.append(f"- **{x['category']}** ({x['stage']}) — {x['detail']} → {x['recovery']}")
+              lines += ["", "</details>"]
+
+          req = urllib.request.Request(
+              "https://api.github.com/repos/${{ github.repository }}/issues/"
+              "${{ github.event.issue.number }}/comments",
+              data=json.dumps({"body": "\n".join(lines)}).encode(),
+              headers={
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Accept": "application/vnd.github+json",
+                  "Content-Type": "application/json",
+                  "User-Agent": "broker",
+              },
+          )
+          with urllib.request.urlopen(req, timeout=20) as resp:
+              print("replied:", resp.status)
+          PY

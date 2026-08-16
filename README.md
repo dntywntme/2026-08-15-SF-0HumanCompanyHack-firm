@@ -63,8 +63,8 @@ Honest accounting, because a "zero human company" claim invites scrutiny:
 This repo is **the firm**. Its counterparty lives in a separate repository,
 [`2026-08-15-SF-0HumanCompanyHack-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client),
 and is treated as an untrusted external party. They share no secrets and no
-runner; the only channel between them is a GitHub Issue carrying a fenced JSON
-work order, which the firm validates as data and never as instructions.
+runner; the channel between them is a GitHub Issue carrying a fenced JSON work
+order, which the firm validates as data and never as instructions.
 
 Every artifact crossing a boundary is verified by an identity that did not
 produce it. Full trust model, enforcement mechanisms, and the evidence behind
