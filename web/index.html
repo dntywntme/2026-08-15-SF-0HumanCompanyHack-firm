@@ -63,6 +63,15 @@
             font-size: .78rem; color: var(--text-muted); margin-top: .75rem; }
   .legend span { display: inline-flex; align-items: center; gap: .35rem; }
   .key { width: .6rem; height: .6rem; border-radius: 50%; display: inline-block; }
+  /* Progressive disclosure: explanation collapses so the evidence stays above
+     the fold. The marker is replaced because the native one sits inconsistently
+     across engines. */
+  details.chart-card > summary { cursor: pointer; list-style: none; }
+  details.chart-card > summary::-webkit-details-marker { display: none; }
+  details.chart-card > summary::after { content: " \25B8"; color: var(--text-muted); font-weight: 400; }
+  details.chart-card[open] > summary::after { content: " \25BE"; }
+  details.chart-card > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+  #glance dd a { color: inherit; }
 </style>
 </head>
 <body>
@@ -104,18 +113,27 @@
   <p class="eyebrow">Zero-Human Company Hackathon &middot; San Francisco &middot; 2026-08-15</p>
   <h1 class="app-title">An agent-run company and the agent that hires it.</h1>
   <p class="app-sub">
-    Two repositories, no human at either end, and the only humans in the loop are
-    the ones Broker pays for judgement. Its customers are personal assistants
-    acting for their humans &mdash; an assistant with calendar access sees the
-    investor meeting at six, and buys a verdict on which pitch line lands,
-    without waking anyone up to ask.
-  </p>
-  <p class="app-sub">
     Every &ldquo;AI does your X&rdquo; product dies at the same place: the ten percent the
     agent does not know. Broker does not hide that boundary &mdash; it prices it.
-    When its confidence drops below threshold it stops answering, buys a real
-    human&rsquo;s judgement, marks it up, and sells the result.
+    Below threshold it stops answering, buys a real human&rsquo;s judgement, marks it
+    up, and sells the result. Two repositories, no human at either end, and the
+    only humans in the loop are the ones it pays.
   </p>
+
+  <!-- The whole argument in four lines, each pointing at the evidence for it.
+       Everything below this is detail; a reader who stops here has the case. -->
+  <section class="chart-card" id="glance">
+    <dl class="pnl">
+      <dt>What it sells</dt>
+      <dd>a verdict on a question you cannot look up &mdash; $1.00</dd>
+      <dt>What it costs</dt>
+      <dd>real human judgement, $4.50 a head &mdash; <a href="#decisions">every decision it made</a></dd>
+      <dt>Who buys it</dt>
+      <dd>another agent, in <a href="https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/">its own repository</a>, with no human at that end either</dd>
+      <dt>Check it yourself</dt>
+      <dd><code>make replay</code> re-emits this run offline, with no keys and no network</dd>
+    </dl>
+  </section>
 
   <div class="grid2">
     <section class="chart-card">
@@ -126,13 +144,15 @@
         <div class="rule"></div>
         <dt><strong>Margin</strong> <span class="muted">(at event pricing)</span></dt> <dd><span id="margin" class="big">&mdash;</span></dd>
       </dl>
-      <p class="mono muted" id="ledger-note">loading&hellip;</p>
+      <!-- The legend explains the negative margin before the transaction line
+           reports it. Read the other way round, the numbers look like a fault. -->
       <p class="mono muted">
         Margin is negative on purpose. Prices are capped at $1 for the event
         while the human judgement behind each answer costs $4.50 a head, so
         every demo sale runs at a planned loss. The company is not broken; it is
         selling below cost in public so the cost is visible.
       </p>
+      <p class="mono muted" id="ledger-note">loading&hellip;</p>
     </section>
 
     <section class="chart-card">
@@ -153,36 +173,37 @@
     </section>
   </div>
 
+
+
+
+
   <section class="chart-card">
-    <h2 class="chart-title">Humans are cost of goods, not employees</h2>
-    <p class="app-sub">
-      A normal company carries people as headcount: salaries, benefits, a bench
-      that costs the same whether work arrives or not. Broker carries them the
-      way a factory carries steel. Human judgement is a <strong>variable input
-      purchased per order</strong>, at a unit price Broker does not set &mdash;
-      Terac quotes $4.50 a head &mdash; and it lands on the income statement as
-      cost of goods sold, below revenue, not as operating expense.
-    </p>
-    <p class="app-sub">
-      Three things follow, and they are the whole argument. Cost scales with
-      <em>volume</em> rather than headcount, so there is no hiring, no bench and
-      no idle capacity. Viability becomes arithmetic instead of organisation:
-      the business works if the escalation rate times the unit cost stays under
-      the price, which is a number you can measure rather than a culture you
-      have to build. And the agent&rsquo;s own ignorance acquires a line item &mdash;
-      every question it could not answer alone shows up on this P&amp;L with a
-      dollar figure attached.
-    </p>
-    <p class="app-sub muted">
-      The people are identity-verified, screened, paid per completed task at
-      Terac&rsquo;s rate, and paid on approval. Calling them cost of goods is a
-      statement about the accounting, not about the worth of the work: it is the
-      honest label for an input this company buys and cannot produce itself.
-    </p>
+    <h2 class="chart-title">Decisions</h2>
+    <p class="muted">Every judgement the company made, in order, with what it rejected and what it cost. No human appears in any of them.</p>
+    <div class="flow" id="decisions"></div>
+    <p class="empty" id="decisions-empty">No run published yet.</p>
+    <div class="legend">
+      <span><i class="key" style="background:var(--primary)"></i> judgement</span>
+      <span><i class="key" style="background:var(--danger)"></i> commits money</span>
+      <span><i class="key" style="background:var(--star)"></i> pays a human</span>
+      <span><i class="key" style="background:var(--text-muted)"></i> refused / held</span>
+    </div>
   </section>
 
   <section class="chart-card">
-    <h2 class="chart-title">How it runs</h2>
+    <h2 class="chart-title">Run</h2>
+    <div class="chips" id="stages"></div>
+    <p class="empty" id="stages-note">loading checkpoints&hellip;</p>
+  </section>
+
+  <section class="chart-card">
+    <h2 class="chart-title">Incidents</h2>
+    <p class="muted">Failures the company caught, and what it did about them.</p>
+    <p class="empty" id="incidents">No failures in this run.</p>
+  </section>
+
+  <details class="chart-card">
+    <summary class="chart-title">How it runs</summary>
     <p class="app-sub">
       Nothing here is driven by hand. Two repositories act as counterparties and
       every leg executes in GitHub Actions.
@@ -213,32 +234,35 @@
       <dt>Replay</dt>
       <dd>every stage checkpoints, so the whole run re-emits offline with no keys</dd>
     </dl>
-  </section>
+  </details>
 
-  <section class="chart-card">
-    <h2 class="chart-title">Decisions</h2>
-    <p class="muted">Every judgement the company made, in order, with what it rejected and what it cost. No human appears in any of them.</p>
-    <div class="flow" id="decisions"></div>
-    <p class="empty" id="decisions-empty">No run published yet.</p>
-    <div class="legend">
-      <span><i class="key" style="background:var(--primary)"></i> judgement</span>
-      <span><i class="key" style="background:var(--danger)"></i> commits money</span>
-      <span><i class="key" style="background:var(--star)"></i> pays a human</span>
-      <span><i class="key" style="background:var(--text-muted)"></i> refused / held</span>
-    </div>
-  </section>
-
-  <section class="chart-card">
-    <h2 class="chart-title">Run</h2>
-    <div class="chips" id="stages"></div>
-    <p class="empty" id="stages-note">loading checkpoints&hellip;</p>
-  </section>
-
-  <section class="chart-card">
-    <h2 class="chart-title">Incidents</h2>
-    <p class="muted">Failures the company caught, and what it did about them.</p>
-    <p class="empty" id="incidents">No failures in this run.</p>
-  </section>
+  <details class="chart-card">
+    <summary class="chart-title">Humans are cost of goods, not employees</summary>
+    <p class="app-sub">
+      A normal company carries people as headcount: salaries, benefits, a bench
+      that costs the same whether work arrives or not. Broker carries them the
+      way a factory carries steel. Human judgement is a <strong>variable input
+      purchased per order</strong>, at a unit price Broker does not set &mdash;
+      Terac quotes $4.50 a head &mdash; and it lands on the income statement as
+      cost of goods sold, below revenue, not as operating expense.
+    </p>
+    <p class="app-sub">
+      Three things follow, and they are the whole argument. Cost scales with
+      <em>volume</em> rather than headcount, so there is no hiring, no bench and
+      no idle capacity. Viability becomes arithmetic instead of organisation:
+      the business works if the escalation rate times the unit cost stays under
+      the price, which is a number you can measure rather than a culture you
+      have to build. And the agent&rsquo;s own ignorance acquires a line item &mdash;
+      every question it could not answer alone shows up on this P&amp;L with a
+      dollar figure attached.
+    </p>
+    <p class="app-sub muted">
+      The people are identity-verified, screened, paid per completed task at
+      Terac&rsquo;s rate, and paid on approval. Calling them cost of goods is a
+      statement about the accounting, not about the worth of the work: it is the
+      honest label for an input this company buys and cannot produce itself.
+    </p>
+  </details>
 </section>
 
 </main>
