@@ -33,6 +33,19 @@ make replay   # re-emit runs/demo/ from checkpoints, calls nothing live
 `make run` and `make replay` emit byte-identical stdout. Override the run id with
 `make run RUN_ID=foo`.
 
+## CLI
+
+```
+company [--run-id ID]           run identifier (default: UTC timestamp)
+        [--replay RUN_ID]       re-emit a prior run from checkpoints, calls nothing live
+        [--runs-dir PATH]       where checkpoints live (default: runs/)
+        [--max-turns N]         hard turn budget for the whole run (default: 12)
+        [--stage-timeout S]     per-stage wall-clock budget in seconds (default: 30)
+```
+
+Every variable the code reads is documented in
+[`.env.example`](.env.example); copy it to `.env`, which is gitignored.
+
 ## Status
 
 Honest accounting, because a "zero human company" claim invites scrutiny:
