@@ -99,7 +99,7 @@ than Broker side.
   `agent.py` write it on each run — same shape, no page change — and the client
   surface becomes generated rather than asserted.
 - **The client UI has no test coverage.** Broker's e2e sweep at
-  `/tmp/uitest/e2e.js` covers Broker's two views across six viewports; the
+  `tools/uitest/e2e.js` covers Broker's two views across six viewports; the
   client page was checked once by hand. Add it to the same suite: the
   reconciliation step (does it read Broker's ledger?) is the assertion worth
   having, because it is the cross-repo claim.
@@ -139,5 +139,5 @@ recorded fixtures, so there are barely any LLM spans to trace.
 ```bash
 make setup && make test && make lint         # 49 tests
 make replay                                  # byte-identical, no network, no keys
-cd /tmp/uitest && node e2e.js                # 12 viewport/page combos, real Chromium
+make e2e                                     # 12 viewport/page combos, real Chromium
 ```

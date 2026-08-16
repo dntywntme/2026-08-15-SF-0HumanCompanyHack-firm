@@ -1,7 +1,7 @@
 UV ?= $(shell command -v uv 2>/dev/null || echo $(HOME)/.local/bin/uv)
 RUN_ID ?= demo
 
-.PHONY: setup test lint fmt run replay clean
+.PHONY: setup test lint fmt run replay e2e clean
 
 setup:
 	$(UV) sync
@@ -22,6 +22,9 @@ run:
 
 replay:
 	$(UV) run company --replay $(RUN_ID)
+
+e2e:
+	cd tools/uitest && npm install --silent && node e2e.js
 
 clean:
 	rm -rf runs .pytest_cache .ruff_cache

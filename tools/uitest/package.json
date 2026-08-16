@@ -1,0 +1,8 @@
+{
+  "name": "broker-uitest",
+  "private": true,
+  "type": "commonjs",
+  "description": "Viewport + console sweep over the deployed Broker site.",
+  "scripts": { "e2e": "node e2e.js" },
+  "dependencies": { "playwright-core": "^1.62.1" }
+}
