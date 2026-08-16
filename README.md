@@ -16,7 +16,7 @@ answer. That call, and its unit economics, are what this repo demonstrates.
 - **Counterparty repo:** [`…-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client) — the assistant agent that orders, judges, and pays
 - **Architecture and the evidence behind it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Diagrams and file cross-reference:** [`docs/FLOWS.md`](docs/FLOWS.md)
-- **What was submitted, and to which tracks:** [`SUBMISSION.md`](SUBMISSION.md)
+- **What was submitted, and to which tracks:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 - **How to run the demo, including the offline fallback:** [`docs/DEMO.md`](docs/DEMO.md)
 
 ## Quickstart
