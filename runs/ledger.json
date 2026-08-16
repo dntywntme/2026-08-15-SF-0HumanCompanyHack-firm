@@ -6,10 +6,25 @@
       "amount_usd": "1.00",
       "livemode": false,
       "status": "succeeded"
+    },
+    {
+      "amount_usd": "1.00",
+      "livemode": false,
+      "status": "succeeded"
+    },
+    {
+      "amount_usd": "1.00",
+      "livemode": false,
+      "status": "succeeded"
+    },
+    {
+      "amount_usd": "1.00",
+      "livemode": false,
+      "status": "succeeded"
     }
   ],
   "refunded": 0,
-  "revenue_usd": "1.00",
+  "revenue_usd": "4.00",
   "source": "stripe",
-  "transactions": 1
+  "transactions": 4
 }
