@@ -135,4 +135,24 @@ jobs:
           )
           with urllib.request.urlopen(req, timeout=20) as resp:
               print("replied:", resp.status)
+
+          # An order that has been answered is finished. Leaving it open reads
+          # as an unhandled customer, which is the opposite of what the thread
+          # demonstrates. The comment above is the closing record; a fulfilled
+          # order closes as completed, a refused one as not planned.
+          state_reason = "completed" if d else "not_planned"
+          close = urllib.request.Request(
+              "https://api.github.com/repos/${{ github.repository }}/issues/"
+              "${{ github.event.issue.number }}",
+              data=json.dumps({"state": "closed", "state_reason": state_reason}).encode(),
+              headers={
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Accept": "application/vnd.github+json",
+                  "Content-Type": "application/json",
+                  "User-Agent": "broker",
+              },
+              method="PATCH",
+          )
+          with urllib.request.urlopen(close, timeout=20) as resp:
+              print(f"closed as {state_reason}:", resp.status)
           PY
