@@ -181,7 +181,13 @@ def load_checkpoints(run_id: str, *, runs_dir: Path = DEFAULT_RUNS_DIR) -> list[
     run_dir = Path(runs_dir) / run_id
     if not run_dir.is_dir():
         raise FileNotFoundError(f"no such run: {run_dir}")
-    files = sorted(p for p in run_dir.glob("*.json") if not p.name.endswith(".timing.json"))
+    # index.json is the dashboard's stage manifest, not a checkpoint, and
+    # *.timing.json is deliberately excluded from the replayable record.
+    files = sorted(
+        p
+        for p in run_dir.glob("*.json")
+        if not p.name.endswith(".timing.json") and p.name != "index.json"
+    )
     if not files:
         raise FileNotFoundError(f"run {run_id!r} has no checkpoints")
     return [json.loads(p.read_text(encoding="utf-8")) for p in files]
