@@ -11,11 +11,11 @@ is verified against the state at that moment; check it still holds before acting
 | Client site | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/> |
 | Terac | Two studies **fulfilled** (`e39vxoxasopgrblq6tchgf68`, `w4pxs0mrufeqo9kzuruzsvui`) — $18.00 paid to 4 people at $4.50 CPI, 30 screened (22 + 8), balance $125 → $107. Study #2 was created *and* launched by the agent |
 | Stripe | $4.00 settled across 4 charges by the client agent, unattended, **sandbox** (`livemode: false`) |
-| Tests | firm 49, client 22, ruff clean |
+| Tests | Broker 49, client 22, ruff clean |
 | Replay | Byte-identical on the recorded tier with no keys |
-| CI | ci · pages · ledger (firm), pages · pay (client) — all green |
+| CI | ci · pages · ledger (Broker), pages · pay (client) — all green |
 
-Working copy note: the firm repo's `origin` still points at the stale **qte77**
+Working copy note: Broker repo's `origin` still points at the stale **qte77**
 fork, which has red CI and no secrets. The live remote is **`dw`** →
 `dntywntme`. Push with `git push dw HEAD:main` or repoint origin.
 
@@ -25,10 +25,10 @@ Two are missing. Both values already exist in the respective gitignored `.env`.
 
 | Repo | Secret | Unlocks |
 |---|---|---|
-| firm | **`TERAC_API_KEY`** | Tier 1 live sourcing. Without it every CI run silently drops to the recorded tier |
-| client | **`CLIENT_GITHUB_TOKEN`** | The client agent opening work orders as Issues. Scope it to **Issues: write on the firm repo only** — that scope *is* the trust boundary |
+| Broker | **`TERAC_API_KEY`** | Tier 1 live sourcing. Without it every CI run silently drops to the recorded tier |
+| client | **`CLIENT_GITHUB_TOKEN`** | The client agent opening work orders as Issues. Scope it to **Issues: write on Broker repo only** — that scope *is* the trust boundary |
 
-Already set and working: `STRIPE_RESTRICTED_KEY` (firm), `CLIENT_STRIPE_KEY` (client).
+Already set and working: `STRIPE_RESTRICTED_KEY` (Broker), `CLIENT_STRIPE_KEY` (client).
 
 **Do not automate a Terac launch.** `adapters/terac.py` only reads submissions,
 which costs nothing. Launching spends real money and stays a human decision,
@@ -76,7 +76,7 @@ dashboard-only, which the adapter already documents.
 ## 3. Honesty items to close
 
 - **The Issues channel is now exercised, but unevenly.** `intake.yml` is wired
-  and firm issue #2 carries a full bot reply with the decision list. Issue #1,
+  and Broker issue #2 carries a full bot reply with the decision list. Issue #1,
   opened 19 seconds earlier, got **no reply at all** — so a judge opening the
   Issues tab sees one customer order that was ignored. Find out why intake
   skipped it, and close both once the orders are delivered.
@@ -92,19 +92,19 @@ dashboard-only, which the adapter already documents.
 ## 4. The client repo specifically
 
 It was built last and shows it. Nothing is broken, but three things are thinner
-than the firm side.
+than Broker side.
 
 - **`web/activity.json` is hand-written.** The client page renders a static
   record of what the agent did rather than something the agent emitted. Have
   `agent.py` write it on each run — same shape, no page change — and the client
   surface becomes generated rather than asserted.
-- **The client UI has no test coverage.** The firm's e2e sweep at
-  `/tmp/uitest/e2e.js` covers the firm's two views across six viewports; the
+- **The client UI has no test coverage.** Broker's e2e sweep at
+  `/tmp/uitest/e2e.js` covers Broker's two views across six viewports; the
   client page was checked once by hand. Add it to the same suite: the
-  reconciliation step (does it read the firm's ledger?) is the assertion worth
+  reconciliation step (does it read Broker's ledger?) is the assertion worth
   having, because it is the cross-repo claim.
 - **Styles are duplicated between the two pages.** The mobile grid bug was fixed
-  on the firm page and shipped broken on the client for an hour because the
+  on Broker page and shipped broken on the client for an hour because the
   `.step` rules exist twice. Either vendor a shared stylesheet into both, or
   accept the duplication deliberately and note it.
 

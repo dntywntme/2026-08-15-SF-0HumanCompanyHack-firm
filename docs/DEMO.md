@@ -58,7 +58,7 @@ The platform caps the demo video at **2 minutes**. Budget:
 | 0:45–1:10 | Before/after on screen. The answer measurably improves |
 | 1:10–1:30 | The customer pays. Stripe settles. **P&L updates live** |
 | 1:30–1:50 | An induced failure — schema violation or timeout — is caught and handled on the incidents panel |
-| 1:50–2:00 | The trust boundary: an artifact crossing firm ⟷ client blocked until a different identity approves |
+| 1:50–2:00 | The trust boundary: an artifact crossing Broker ⟷ client blocked until a different identity approves |
 
 Record the fallback version too. If the live capture is clean, ship that; if not,
 the replay-driven capture is indistinguishable to a viewer and always works.

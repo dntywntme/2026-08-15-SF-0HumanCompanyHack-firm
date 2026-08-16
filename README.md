@@ -1,11 +1,11 @@
-# Broker — an agent-run company that employs humans
+# Broker — an agent-run company that prices its own ignorance
 
 *An agent-run company and the agent that hires it — two repos, no human at either
 end, and the only humans in the loop are the ones it pays for judgement.*
 
 Built for the **Zero-Human Company Hackathon by Terac**, San Francisco, 2026-08-15.
 
-This repo is **the firm**. It takes work in, decides whether it can do that work
+This repo is **Broker**. It takes work in, decides whether it can do that work
 alone, and when it cannot, it **buys human expertise on the open market**, marks
 it up, and sells the result. Its cost of goods is other people's time; its margin
 is the spread. The point is not that agents replace humans — it is that a company
@@ -72,7 +72,7 @@ Six stages, each checkpointed to `runs/<id>/` as it completes:
                 └── above threshold? answer alone, cost of goods $0.00
 ```
 
-`triage` is the whole idea in one stage: the firm scores its own confidence, and
+`triage` is the whole idea in one stage: Broker scores its own confidence, and
 below threshold it stops answering and escalates to a human instead of guessing.
 `verify` is the sharpest frame — `approve_submission` is the agent deciding
 whether a human gets paid.
@@ -81,19 +81,19 @@ whether a human gets paid.
 
 The counterparty is treated as an **untrusted external party**. The two repos
 share no secrets and no runner; the channel between them is a GitHub Issue
-carrying a fenced JSON work order, which the firm validates as data and never as
+carrying a fenced JSON work order, which Broker validates as data and never as
 instructions. Every artifact crossing the boundary is verified by an identity
 that did not produce it.
 
 Credential scope is what enforces it: the client's token can write Issues on this
-repo and nothing else, and the firm holds a read-only `rk_` Stripe key, so it can
+repo and nothing else, and Broker holds a read-only `rk_` Stripe key, so it can
 observe that payment arrived but never move money. **A supplier who can charge
 you at will is not a counterparty.** Full trust model and enforcement:
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#trust-model).
 
 ### Settlement, and the rails we did not use
 
-Today the client pays the firm through **Stripe**, because this event runs on
+Today the client pays Broker through **Stripe**, because this event runs on
 fiat rails and real revenue is the thing being proven. In production, a
 zero-trust boundary between two agents is exactly where agent-native payment
 protocols belong, and we deliberately integrated neither:
@@ -120,7 +120,7 @@ Honest accounting, because a "zero human company" claim invites scrutiny.
 | Error-mode instrumentation (Pydantic validation → visible recovery) | **Built** |
 | Terac: buy human expertise, measure before/after | **Live** — see the ledger |
 | Stripe: collect revenue | **Live in a sandbox**, labelled as such on the site |
-| Trust boundary: firm ⟷ client across separate repos | Enforced by credential scope today |
+| Trust boundary: Broker ⟷ client across separate repos | Enforced by credential scope today |
 | Governance rails (Builder/Integrator split) | Architecture, not operating history — branch protection is off |
 
 The per-stage timeout runs the stage on a worker thread and abandons it on

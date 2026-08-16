@@ -5,7 +5,7 @@ This file carries the picture and the file-by-file cross-reference.
 
 Repositories:
 
-- **firm** — [`dntywntme/2026-08-15-SF-0HumanCompanyHack-firm`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm) (this one)
+- **Broker** — [`dntywntme/2026-08-15-SF-0HumanCompanyHack-firm`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm) (this one)
 - **client** — [`dntywntme/2026-08-15-SF-0HumanCompanyHack-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client)
 
 Live surfaces:
@@ -28,7 +28,7 @@ Live surfaces:
              │ Issue: fenced JSON work order                  │ issue comment
              │ token scope = Issues:write, nothing else       │ = deliverable
              ▼                                                │
- ┌── FIRM REPO ── the company ───────────────────────────────┴───────────────┐
+ ┌── BROKER REPO ── the company ─────────────────────────────┴───────────────┐
  │                                                                           │
  │  .github/workflows/ci.yml       lint · test · offline replay              │
  │  .github/workflows/ledger.yml   poll Stripe · commit · publish the site   │
@@ -85,7 +85,7 @@ honest fit rather than a bolt-on.
 
   SECRET BOUNDARY
     GitHub Actions secrets ═══╗  server-side only
-      firm:   STRIPE_RESTRICTED_KEY (rk_, read)      ║
+      Broker: STRIPE_RESTRICTED_KEY (rk_, read)      ║
       client: CLIENT_STRIPE_KEY     (sk_test_, pay)  ╠══▶ aggregates ──▶ Pages
                                                      ║    no customer ids,
                                                      ╝    no card data
@@ -94,7 +94,7 @@ honest fit rather than a bolt-on.
 ## 3. User flow
 
 ```
-  HUMAN                ASSISTANT (client)          BROKER (firm)        PANEL
+  HUMAN                ASSISTANT (client)          BROKER               PANEL
     │
     │ calendar: "investor pitch 18:00"
     │

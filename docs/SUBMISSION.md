@@ -65,7 +65,7 @@ A company selling below cost in public, so the cost is visible.
 ## How it works
 
 ```
-  HUMAN                ASSISTANT (client repo)        BROKER (firm repo)
+  HUMAN                ASSISTANT (client repo)        BROKER (this repo)
     │
     │ calendar: "investor pitch 18:00"
     └── standing mandate ──▶ decides to buy
@@ -89,14 +89,14 @@ A company selling below cost in public, so the cost is visible.
                           client site  ◀── reconciles ── ledger.json ──▶ P&L
 ```
 
-Both sides publish. The client asserts it paid; the firm independently reports
+Both sides publish. The client asserts it paid; Broker independently reports
 receiving it; the two pages agree without sharing a database.
 
 ```
-  TRUST          firm ⟷ client     separate repos, separate credentials
-                 client token  = Issues:write on the firm repo, nothing else
+  TRUST          Broker ⟷ client     separate repos, separate credentials
+                 client token  = Issues:write on the Broker repo only
                  client key    = sk_test_ (settles)
-                 firm key      = rk_      (reads only)
+                 Broker key    = rk_      (reads only)
   A supplier who can charge you at will is not a counterparty.
 ```
 
@@ -131,7 +131,7 @@ Stated because the omissions are decisions, not gaps.
   integration would have failed their own bar: *"remove the room and the app
   should break, not keep working the same way."* What we do instead is
   coordinate the two agents through a **public GitHub Issue thread** — the
-  client opens a work order as fenced JSON, the firm replies as a comment.
+  client opens a work order as fenced JSON, Broker replies as a comment.
   Every message is permanently auditable by anyone, with no vendor in the path.
   Band would have been the better-instrumented version of that; the audit trail
   is the version we could ship and verify today.
