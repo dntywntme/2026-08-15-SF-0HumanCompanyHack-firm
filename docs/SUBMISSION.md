@@ -143,6 +143,47 @@ creates and confirms a PaymentIntent, the charge lands in `/v1/charges`, a
 scheduled job publishes it, the P&L renders it — but no card is debited. We did
 not want to claim revenue we did not earn.
 
+## What it would take to run this for real
+
+Nothing here is speculative; each item is a known gap with a known fix.
+
+**Unit economics.** At list price the shape works: one expert response costs
+$4.50, a three-response verdict costs $13.50, and $39 leaves a 65% gross margin
+— in the range research panels already charge. The demo runs at a loss only
+because we capped the price at $1 for the event. The number that decides
+viability is the **escalation rate**: below roughly 20% of orders needing a
+human, the blended cost of goods stays under a dollar. We have not measured it
+on real traffic, and that is the first thing we would instrument.
+
+**The three things missing for production.**
+
+1. *Confidence has to be earned.* Today the escalation decision comes from a
+   self-assessed score with a heuristic fallback. It needs calibration against
+   outcomes — did the humans actually disagree when confidence was low? Every
+   run already records both, so the dataset builds itself.
+2. *Terac's turnaround sets the product.* Recruitment plus screening took ~40
+   minutes for two responses. That rules out synchronous use and rules in
+   asynchronous work: overnight verdicts, batched panels, standing questions.
+3. *Payments need a real account.* Sandbox to live is a key swap; taking money
+   from strangers is KYC, disputes, and refunds. The dispute path is the one we
+   have not built.
+
+**Where the revenue would come from.** Not from selling to consumers one dollar
+at a time. The buyer is another agent with a budget: assistants that need a
+defensible answer, tools that need a human check before acting, pipelines that
+need labelled judgement on demand. Per-call pricing with a monthly floor is the
+obvious shape, and the marketplace analogues are established.
+
+**What we are not claiming.** That this is a business today. It is a working
+mechanism with real money on both sides, roughly eight hours old, on a sample
+of two. The margin at list price is arithmetic, not evidence, and the escalation
+rate that decides everything is unmeasured.
+
+**The part worth keeping.** An agent that can price its own ignorance is useful
+well beyond this product. Every autonomous system eventually needs to decide
+whether to act on what it believes or pay to find out, and that decision has a
+dollar value attached. That is the piece we would build on.
+
 ## Known limitations
 
 - The per-stage timeout abandons a stage on a worker thread rather than killing
