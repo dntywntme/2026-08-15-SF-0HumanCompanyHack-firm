@@ -37,6 +37,67 @@ under a standing mandate. **No human works at either end of the transaction.**
 The agent wrote the job spec, set the budget, reviewed the work, and authorised
 payment. `approve_submission` is the agent deciding whether a human gets paid.
 
+## The hero frame
+
+One screen carries the argument. Revenue is real money settled by an agent; cost
+of goods is real money paid to real people; the margin is negative because we
+capped the price at a dollar while human judgement costs $4.50 a head.
+
+```
+    LEDGER                                  UNIT ECONOMICS
+    Revenue                     $1.00       Price per verdict          $1.00
+    Cost of goods              -$9.00       Model inference (open-wt)  $0.01
+    ─────────────────────────────────       ───────────────────────────────
+    Margin (at event pricing)  -$8.00       Gross margin                 99%
+    1 settled · live from Stripe
+```
+
+A company selling below cost in public, so the cost is visible.
+
+## The call to action
+
+> **Ask something you cannot look up.** The agent will tell you when it does not
+> know — and then it will go and buy the answer from a person, for $4.50, and
+> sell it to you for a dollar.
+
+## How it works
+
+```
+  HUMAN                ASSISTANT (client repo)        BROKER (firm repo)
+    │
+    │ calendar: "investor pitch 18:00"
+    └── standing mandate ──▶ decides to buy
+                                 │
+                                 ├── GitHub Issue ────▶ intake    validate
+                                 │   (fenced JSON)      triage    confidence 0.31
+                                 │                        │
+                                 │                 ┌──────┴──────┐
+                                 │                 │ "I cannot   │
+                                 │                 │  know this" │
+                                 │                 └──────┬──────┘
+                                 │                      source ──▶ TERAC ──▶ 🧑🧑
+                                 │                      verify   approve = PAID
+                                 │                      price    from real cost
+                                 │  ◀── issue comment ── deliver
+                                 │
+                                 ├── PaymentIntent ──▶ STRIPE
+                                 │                        │
+                                 │                   poll_ledger.py
+                                 ▼                        ▼
+                          client site  ◀── reconciles ── ledger.json ──▶ P&L
+```
+
+Both sides publish. The client asserts it paid; the firm independently reports
+receiving it; the two pages agree without sharing a database.
+
+```
+  TRUST          firm ⟷ client     separate repos, separate credentials
+                 client token  = Issues:write on the firm repo, nothing else
+                 client key    = sk_test_ (settles)
+                 firm key      = rk_      (reads only)
+  A supplier who can charge you at will is not a counterparty.
+```
+
 ## Tracks claimed
 
 **Best Overall Agent-Run Company** — revenue settled by an agent with no human in
@@ -91,6 +152,21 @@ not want to claim revenue we did not earn.
   single-source-of-truth violation at the trust boundary, and the two schemas
   can drift.
 - The governance rails are architecture, not operating history.
+
+## Where everything lives
+
+| | |
+|---|---|
+| Architecture, and the measurements behind it | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) |
+| Full diagrams + file-by-file cross-reference | [`docs/FLOWS.md`](FLOWS.md) |
+| Demo runbook and the offline fallback | [`docs/DEMO.md`](DEMO.md) |
+| Sponsor rules and verbatim track criteria | [`docs/SPONSORS.md`](SPONSORS.md) |
+| The spine | [`src/company/harness.py`](../src/company/harness.py) |
+| The six stages | [`src/company/stages.py`](../src/company/stages.py) |
+| The spend guard | [`src/company/policy.py`](../src/company/policy.py) |
+| Every decision, with what it rejected | [`src/company/decisions.py`](../src/company/decisions.py) |
+| Client agent, channel, and payment | [`…-client/src/client/`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client/tree/main/src/client) |
+| Live client surface | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/> |
 
 ## Verify it yourself
 
