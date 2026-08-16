@@ -14,8 +14,8 @@ pay for the answer. That call, and its unit economics, are what this repo is.
 
 ## See it live
 
-- **Dashboard:** <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/>
-- **Ledger (JSON)** — the live P&L: <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json>
+- [Live dashboard](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/) — the P&L, the decision log, and the run
+- [Live ledger, as JSON](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json) — every figure this project claims
 - **Counterparty:** [`…-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client) — the assistant agent that orders, judges, and pays
 - **What was submitted, and to which tracks:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 - **Architecture, and the measurements behind it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)

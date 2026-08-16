@@ -7,8 +7,8 @@ is verified against the state at that moment; check it still holds before acting
 
 | | |
 |---|---|
-| Firm site | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/> |
-| Client site | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/> |
+| Broker site | [Broker's dashboard](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/) |
+| Client site | [the client's surface](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/) |
 | Terac | Two studies **fulfilled** (`e39vxoxasopgrblq6tchgf68`, `w4pxs0mrufeqo9kzuruzsvui`) — $18.00 paid to 4 people at $4.50 CPI, 30 screened (22 + 8), balance $125 → $107. Study #2 was created *and* launched by the agent |
 | Stripe | $4.00 settled across 4 charges by the client agent, unattended, **sandbox** (`livemode: false`) |
 | Tests | Broker 49, client 22, ruff clean |

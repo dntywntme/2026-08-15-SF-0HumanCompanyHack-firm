@@ -8,9 +8,9 @@
 | Team | `agentrun-inc` |
 | Project | **Broker** |
 | Tagline | *An agent-run company and the agent that hires it — two repos, no human at either end, and the only humans in the loop are the ones it pays for judgement.* |
-| Repo | <https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm> |
-| Counterparty repo | <https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client> |
-| Live | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/> |
+| Repo | [Broker, the company](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm) |
+| Counterparty repo | [the client agent that orders and pays](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client) |
+| Live | [Broker's dashboard](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/) |
 
 Out of band to organizers: team name + Stripe Payment Link + restricted key
 (`rk_`, Balance and Charges read-only). The secret key is never shared.
@@ -220,7 +220,7 @@ dollar value attached. That is the piece we would build on.
 | The spend guard | [`src/company/policy.py`](../src/company/policy.py) |
 | Every decision, with what it rejected | [`src/company/decisions.py`](../src/company/decisions.py) |
 | Client agent, channel, and payment | [`…-client/src/client/`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client/tree/main/src/client) |
-| Live client surface | <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/> |
+| Live client surface | [what the client agent did](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/) |
 
 ## Verify it yourself
 

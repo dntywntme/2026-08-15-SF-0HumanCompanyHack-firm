@@ -10,9 +10,9 @@ Repositories:
 
 Live surfaces:
 
-- Dashboard — <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/>
-- Ledger JSON — <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json>
-- Participant task view — <https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/?submissionId=demo&taskId=t1>
+- [Dashboard](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/)
+- [Ledger, as JSON](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json)
+- [Participant task view](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/?submissionId=demo&taskId=t1)
 
 ## 1. Architecture
 
