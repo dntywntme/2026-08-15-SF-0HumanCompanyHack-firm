@@ -18,6 +18,7 @@ answer. That call, and its unit economics, are what this repo demonstrates.
 - **Diagrams and file cross-reference:** [`docs/FLOWS.md`](docs/FLOWS.md)
 - **What was submitted, and to which tracks:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 - **How to run the demo, including the offline fallback:** [`docs/DEMO.md`](docs/DEMO.md)
+- **Picking this up next session:** [`docs/NEXT-SESSION.md`](docs/NEXT-SESSION.md)
 
 ## Quickstart
 
