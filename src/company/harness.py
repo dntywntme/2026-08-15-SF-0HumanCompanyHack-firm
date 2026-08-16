@@ -203,7 +203,7 @@ def _default_run_id() -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    from company.stages import PIPELINE
+    from company.stages import PIPELINE, initial_state
 
     parser = argparse.ArgumentParser(prog="company", description=__doc__)
     parser.add_argument("--run-id", default=None, help="run identifier (default: UTC timestamp)")
@@ -227,6 +227,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         runs_dir=args.runs_dir,
         max_turns=args.max_turns,
         stage_timeout=args.stage_timeout,
+        initial_state=initial_state(),
     )
     if not result.ok:
         print(f"run {result.run_id} failed: {result.error}", file=sys.stderr)

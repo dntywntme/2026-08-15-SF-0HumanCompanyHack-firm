@@ -1,0 +1,121 @@
+{
+  "index": 5,
+  "output": {
+    "decisions": [
+      {
+        "because": "well-formed, inside budget, and the question is answerable",
+        "chose": "accept",
+        "cost_usd": "0.00",
+        "kind": "accept_work",
+        "question": "accept this order?",
+        "rejected": [
+          "refuse",
+          "ask the client to clarify"
+        ],
+        "reversible": true,
+        "stage": "intake"
+      },
+      {
+        "because": "self-assessed confidence 0.31 against threshold 0.65; unknowns: which one real buyers actually prefer; whether 'AI' reads as generic in 2026",
+        "chose": "no \u2014 escalate",
+        "cost_usd": "0.00",
+        "kind": "self_assess",
+        "question": "do I know this well enough to sell the answer?",
+        "rejected": [
+          "answer alone"
+        ],
+        "reversible": true,
+        "stage": "triage"
+      },
+      {
+        "because": "within policy",
+        "chose": "spend",
+        "cost_usd": "9.00",
+        "kind": "buy_labor",
+        "question": "commit 9.00 USD of cost of goods?",
+        "rejected": [
+          "refuse"
+        ],
+        "reversible": false,
+        "stage": "source"
+      },
+      {
+        "because": "on-topic, gives a reason, and answers the question asked: 'B \u2014 it says what it does for me, not what it is.'",
+        "chose": "approve \u2014 pay the expert",
+        "cost_usd": "4.50",
+        "kind": "pay_worker",
+        "question": "approve submission 1 of 2?",
+        "rejected": [
+          "reject \u2014 withhold payment",
+          "request a replacement"
+        ],
+        "reversible": false,
+        "stage": "verify"
+      },
+      {
+        "because": "on-topic, gives a reason, and answers the question asked: \"B \u2014 'ship faster' is on every landing page I have ever seen.\"",
+        "chose": "approve \u2014 pay the expert",
+        "cost_usd": "4.50",
+        "kind": "pay_worker",
+        "question": "approve submission 2 of 2?",
+        "rejected": [
+          "reject \u2014 withhold payment",
+          "request a replacement"
+        ],
+        "reversible": false,
+        "stage": "verify"
+      },
+      {
+        "because": "2 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
+        "chose": "no \u2014 the panel contradicts the draft",
+        "cost_usd": "0.00",
+        "kind": "self_assess",
+        "question": "does the human panel agree with the agent's draft?",
+        "rejected": [
+          "keep the agent's answer",
+          "average the two"
+        ],
+        "reversible": true,
+        "stage": "verify"
+      },
+      {
+        "because": "cost of goods 9.00 at 2.5x, clamped to the 0.50-1.00 band set for the event",
+        "chose": "1.00 USD",
+        "cost_usd": "0.00",
+        "kind": "set_price",
+        "question": "what should this cost the customer?",
+        "rejected": [
+          "cost-plus without a cap (22.500)",
+          "free"
+        ],
+        "reversible": true,
+        "stage": "price"
+      },
+      {
+        "because": "the answer is sourced, priced, and within the client's stated budget",
+        "chose": "release",
+        "cost_usd": "0.00",
+        "kind": "release",
+        "question": "release the deliverable?",
+        "rejected": [
+          "hold until payment clears",
+          "refund and decline"
+        ],
+        "reversible": false,
+        "stage": "deliver"
+      }
+    ],
+    "deliverable": {
+      "answer": "Headline B wins. Buyers said it states the benefit rather than the category, and that 'ship faster' reads as generic.",
+      "cogs_usd": "9.00",
+      "margin_usd": "-8.00",
+      "price_usd": "1.00",
+      "sourced_from": "agent+human",
+      "work_order_id": "wo-1"
+    },
+    "incidents": [],
+    "stage": "deliver"
+  },
+  "run_id": "demo",
+  "stage": "deliver"
+}

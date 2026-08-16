@@ -1,15 +1,30 @@
 {
   "index": 0,
   "output": {
-    "brief": "ship a deterministic agent harness",
-    "item_count": 5,
-    "items": [
-      "ship",
-      "a",
-      "deterministic",
-      "agent",
-      "harness"
-    ]
+    "accepted": true,
+    "decisions": [
+      {
+        "because": "well-formed, inside budget, and the question is answerable",
+        "chose": "accept",
+        "cost_usd": "0.00",
+        "kind": "accept_work",
+        "question": "accept this order?",
+        "rejected": [
+          "refuse",
+          "ask the client to clarify"
+        ],
+        "reversible": true,
+        "stage": "intake"
+      }
+    ],
+    "incidents": [],
+    "order": {
+      "budget_usd": "1.00",
+      "client_id": "client-agent",
+      "id": "wo-1",
+      "question": "Which headline is more compelling: 'Ship faster with AI' or 'Your on-call engineer that never sleeps'?"
+    },
+    "stage": "intake"
   },
   "run_id": "demo",
   "stage": "intake"

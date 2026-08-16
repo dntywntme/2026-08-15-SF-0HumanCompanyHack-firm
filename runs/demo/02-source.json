@@ -1,0 +1,58 @@
+{
+  "index": 2,
+  "output": {
+    "cogs_usd": "9.00",
+    "decisions": [
+      {
+        "because": "well-formed, inside budget, and the question is answerable",
+        "chose": "accept",
+        "cost_usd": "0.00",
+        "kind": "accept_work",
+        "question": "accept this order?",
+        "rejected": [
+          "refuse",
+          "ask the client to clarify"
+        ],
+        "reversible": true,
+        "stage": "intake"
+      },
+      {
+        "because": "self-assessed confidence 0.31 against threshold 0.65; unknowns: which one real buyers actually prefer; whether 'AI' reads as generic in 2026",
+        "chose": "no \u2014 escalate",
+        "cost_usd": "0.00",
+        "kind": "self_assess",
+        "question": "do I know this well enough to sell the answer?",
+        "rejected": [
+          "answer alone"
+        ],
+        "reversible": true,
+        "stage": "triage"
+      },
+      {
+        "because": "within policy",
+        "chose": "spend",
+        "cost_usd": "9.00",
+        "kind": "buy_labor",
+        "question": "commit 9.00 USD of cost of goods?",
+        "rejected": [
+          "refuse"
+        ],
+        "reversible": false,
+        "stage": "source"
+      }
+    ],
+    "human": {
+      "cost_usd": "9.00",
+      "opportunity_id": "e39vxoxasopgrblq6tchgf68",
+      "participants": 2,
+      "responses": [
+        "B \u2014 it says what it does for me, not what it is.",
+        "B \u2014 'ship faster' is on every landing page I have ever seen."
+      ]
+    },
+    "incidents": [],
+    "stage": "source"
+  },
+  "run_id": "demo",
+  "stage": "source"
+}
