@@ -31,7 +31,7 @@ cat runs/demo/0*-*.json            # the checkpoints those claims come from
 | Clause | State | Where it runs | Honest gap |
 |---|---|---|---|
 | Building the product | **Runs** | `build` stage → `Product` with before/after | the product is a brief, not software; nothing compiles |
-| Marketing & outbounds | **Runs, deliberately narrow** | `market` stage → `Offer`, posted to the order's thread and published at [`/.well-known/offer.json`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/.well-known/offer.json) | no cold outbound: the company has no opted-in audience |
+| Marketing & outbounds | **Runs, deliberately narrow** | `market` stage → `Offer`, posted to the order's thread and published at [`/offer.json`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/offer.json) | no cold outbound: the company has no opted-in audience |
 | Selling to customers | **Runs** | `intake` · `price` · `deliver`, over a public Issue thread | one customer, who is our own counterparty agent |
 | Handling payments | **Runs** | client settles a PaymentIntent; `scripts/poll_ledger.py` reconciles | Stripe sandbox; no refunds, no disputes, no KYC |
 | Legal/compliance | **Runs** | `comply` stage → `src/company/compliance.py`; terms and privacy published at [`/legal.html`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html) and cited by id on every answer | rules are hand-written, not counsel-reviewed; no legal entity behind them |
@@ -94,7 +94,7 @@ that never declines a channel is a spam function.
 came from one counterparty. The company has no list, no inbound funnel, and no
 way to reach a customer who has not already opened a thread with it.
 
-**Built since:** `/.well-known/offer.json` is published alongside the dashboard,
+**Built since:** `/offer.json` is published alongside the dashboard,
 so another agent can discover the price, the wire schema, the terms id and how to
 order without a human reading a landing page. It is **derived from the run's own
 market checkpoint** by `scripts/build_site.py` rather than hand-written, which is

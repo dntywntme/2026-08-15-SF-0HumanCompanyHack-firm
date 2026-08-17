@@ -73,12 +73,16 @@ def build(out: Path, run_id: str) -> int:
 
     offer = latest_offer(RUNS / run_id)
     if offer:
+        body = json.dumps({**offer, "run_id": run_id}, indent=2, sort_keys=True) + "\n"
+        # /offer.json is the canonical URL. GitHub Pages does not serve
+        # dot-prefixed paths out of an artifact deployment -- .nojekyll returns
+        # 404 from the deployed site too, which is how we found out -- so the
+        # .well-known copy is written for anywhere this is hosted that follows
+        # the convention, and is not the address we advertise.
+        (out / "offer.json").write_text(body, encoding="utf-8")
         well_known = out / ".well-known"
         well_known.mkdir(parents=True, exist_ok=True)
-        (well_known / "offer.json").write_text(
-            json.dumps({**offer, "run_id": run_id}, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        (well_known / "offer.json").write_text(body, encoding="utf-8")
         print(f"published offer from run {run_id}: {offer.get('price_usd')} USD")
     else:
         # Said out loud rather than skipped silently: no offer means either a

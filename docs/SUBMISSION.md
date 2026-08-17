@@ -71,7 +71,7 @@ would take: [`REQUIREMENTS.md`](REQUIREMENTS.md).
 | Clause | Runs as | State |
 |---|---|---|
 | Building the product | `build` → `Product`, before/after as a field | **Runs** — a written verdict, not software |
-| Marketing & outbounds | `market` → `Offer`, posted to the order's thread and to [`/.well-known/offer.json`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/.well-known/offer.json) | **Runs, narrow** — no cold outbound, by decision |
+| Marketing & outbounds | `market` → `Offer`, posted to the order's thread and to [`/offer.json`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/offer.json) | **Runs, narrow** — no cold outbound, by decision |
 | Selling to customers | `intake` · `price` · `deliver` over a public Issue | **Runs** — one customer, our counterparty |
 | Handling payments | client settles a PaymentIntent; `poll_ledger.py` reconciles | **Runs** — Stripe sandbox |
 | Legal/compliance | `comply` → refuse · redact · disclose; [terms and privacy](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html) cited by id | **Runs** — rules are ours, not counsel's; no entity behind them |

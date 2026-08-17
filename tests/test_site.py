@@ -78,7 +78,12 @@ def test_the_published_offer_comes_from_the_run(tmp_path, monkeypatch):
     )
     assert build(tmp_path / "_site", "demo") == 0
 
-    offer = json.loads((tmp_path / "_site" / ".well-known" / "offer.json").read_text())
+    # /offer.json is the address we advertise; Pages will not serve the
+    # dot-prefixed one. Both are written, and both have to stay in step.
+    canonical = (tmp_path / "_site" / "offer.json").read_text()
+    assert canonical == (tmp_path / "_site" / ".well-known" / "offer.json").read_text()
+
+    offer = json.loads(canonical)
     assert offer["run_id"] == "demo"
     assert offer["terms_id"] == TERMS_ID
     assert set(offer["order_schema"]) == set(WorkOrder.model_fields)
@@ -108,6 +113,7 @@ def test_a_refused_order_advertises_nothing(tmp_path, monkeypatch, capsys):
     assert build(tmp_path / "_site", "refused") == 0
     # A company that refused the order has nothing to advertise from it, and the
     # job log has to say so rather than skipping quietly.
+    assert not (tmp_path / "_site" / "offer.json").exists()
     assert not (tmp_path / "_site" / ".well-known" / "offer.json").exists()
     assert "published no offer" in capsys.readouterr().err
 

@@ -115,7 +115,7 @@ once — otherwise the `*/5` ledger cron becomes a spending loop.
 
 Built in the 2026-08-17 pass, so struck from this list: published terms and
 privacy cited by id, jurisdiction on the work order, the machine-readable offer
-at `/.well-known/offer.json`, and the money-flow strip.
+at `/offer.json`, and the money-flow strip.
 
 Longer term, the client is where the societies.io-shaped idea would go: replace
 the single `evaluate()` with a handful of mandate profiles differing on risk
