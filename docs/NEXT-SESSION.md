@@ -57,6 +57,16 @@ Struck from the previous handoff, with where it went:
   go through an https-only opener now, in both repos.
 - **`tools/uitest/e2e.js` was one 76-line function** flagged at complexity 17. It
   is decomposed per page, and it covers the client page too.
+- **Issue #1 had been closed as `completed` with no deliverable** — a customer
+  order the Issues tab showed as fulfilled and never was. Root cause, which is
+  worth not re-investigating: `intake.yml` was committed at `01:10:32Z` and the
+  issue was opened at `01:10:33Z`, one second before that commit reached the
+  default branch. GitHub dispatches `issues` events only from the default
+  branch's workflow file, so no run was ever queued for it; #2, twenty seconds
+  later, was answered normally. Re-closed as `not_planned` with the explanation
+  in the thread. Nothing was charged and no cost of goods was committed against
+  it. The thread stays public: an order the company failed to answer is part of
+  the operating record.
 
 ## Still open, in order
 
