@@ -31,7 +31,7 @@ under a standing mandate. **No human works at either end of the transaction.**
 |---|---|
 | Terac studies | **Two, both fulfilled.** $18.00 committed, 4 participants paid, 30 applicants screened |
 | Stripe | **$4.00 settled** across 4 charges by the client agent, unattended, in GitHub Actions |
-| Decisions published | **9**, each with what it rejected and what it cost |
+| Decisions published | **13**, each with what it rejected and what it cost |
 | Balance moved | Terac $125.00 → $107.00 |
 
 The agent wrote the job spec, set the budget, reviewed the work, and authorised
@@ -62,6 +62,24 @@ A company selling below cost in public, so the cost is visible.
 > know — and then it will go and buy the answer from a person, for $4.50, and
 > sell it to you for a dollar.
 
+## The organizers' rule, clause by clause
+
+The rule for every project is a list of company functions, so the pipeline is a
+list of company functions. Full mapping, with what is missing and what each gap
+would take: [`REQUIREMENTS.md`](REQUIREMENTS.md).
+
+| Clause | Runs as | State |
+|---|---|---|
+| Building the product | `build` → `Product`, before/after as a field | **Runs** — a written verdict, not software |
+| Marketing & outbounds | `market` → `Offer`, posted to the order's thread | **Runs, narrow** — no cold outbound, by decision |
+| Selling to customers | `intake` · `price` · `deliver` over a public Issue | **Runs** — one customer, our counterparty |
+| Handling payments | client settles a PaymentIntent; `poll_ledger.py` reconciles | **Runs** — Stripe sandbox |
+| Legal/compliance | `comply` → refuse · redact · disclose | **Runs** — rules are ours, not counsel's |
+| Making hard decisions | `DecisionLog`, `authorize_spend`, the escalation gate | **Runs** — confidence uncalibrated |
+
+Absent, and stated as absent: a legal entity, accounting, tax, a dispute path,
+and any customer we did not build ourselves.
+
 ## How it works
 
 ```
@@ -69,9 +87,11 @@ A company selling below cost in public, so the cost is visible.
     │
     │ calendar: "investor pitch 18:00"
     └── standing mandate ──▶ decides to buy
-                                 │
+        ($1.00 ceiling,          │
+         enforced in code)       │
                                  ├── GitHub Issue ────▶ intake    validate
-                                 │   (fenced JSON)      triage    confidence 0.31
+                                 │   (fenced JSON)      comply    may we sell it?
+                                 │                      triage    confidence 0.31
                                  │                        │
                                  │                 ┌──────┴──────┐
                                  │                 │ "I cannot   │
@@ -79,8 +99,10 @@ A company selling below cost in public, so the cost is visible.
                                  │                 └──────┬──────┘
                                  │                      source ──▶ TERAC ──▶ 🧑🧑
                                  │                      verify   approve = PAID
+                                 │                      build    before / after
                                  │                      price    from real cost
                                  │  ◀── issue comment ── deliver
+                                 │  ◀── the offer ────── market   the next order
                                  │
                                  ├── PaymentIntent ──▶ STRIPE
                                  │                        │
@@ -206,17 +228,23 @@ dollar value attached. That is the piece we would build on.
   single-source-of-truth violation at the trust boundary, and the two schemas
   can drift.
 - The governance rails are architecture, not operating history.
+- The compliance rules are hand-written regular expressions, not reviewed by
+  counsel, and carry no jurisdiction logic.
+- Outbound reaches the customer already in the thread and nobody else. That is a
+  recorded decision, but it is also the reason there is one customer.
 
 ## Where everything lives
 
 | | |
 |---|---|
+| The organizers' rule, clause by clause, with the gaps | [`docs/REQUIREMENTS.md`](REQUIREMENTS.md) |
 | Architecture, and the measurements behind it | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) |
+| The compliance gate | [`src/company/compliance.py`](../src/company/compliance.py) |
 | Full diagrams + file-by-file cross-reference | [`docs/FLOWS.md`](FLOWS.md) |
 | Demo runbook and the offline fallback | [`docs/DEMO.md`](DEMO.md) |
 | Sponsor rules and verbatim track criteria | [`docs/SPONSORS.md`](SPONSORS.md) |
 | The spine | [`src/company/harness.py`](../src/company/harness.py) |
-| The six stages | [`src/company/stages.py`](../src/company/stages.py) |
+| The nine stages | [`src/company/stages.py`](../src/company/stages.py) |
 | The spend guard | [`src/company/policy.py`](../src/company/policy.py) |
 | Every decision, with what it rejected | [`src/company/decisions.py`](../src/company/decisions.py) |
 | Client agent, channel, and payment | [`…-client/src/client/`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client/tree/main/src/client) |
@@ -225,8 +253,9 @@ dollar value attached. That is the piece we would build on.
 ## Verify it yourself
 
 ```bash
-make setup && make test && make lint   # 49 tests
+make setup && make test && make lint   # 79 tests here, 36 in the client repo
 make replay                            # byte-identical, no network, no keys
+make e2e                               # 18 viewport/page combos, both sites
 ```
 
 `runs/demo/` is committed, so replay works on a fresh clone. The deployed

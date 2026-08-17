@@ -34,16 +34,21 @@ Live surfaces:
  │  .github/workflows/ledger.yml   poll Stripe · commit · publish the site   │
  │  .github/workflows/pages.yml    deploy web/ + runs/ to GitHub Pages       │
  │                                                                           │
- │  src/company/harness.py    the spine: stages, turn cap, timeout, replay   │
- │  src/company/models.py     WorkOrder · Draft · HumanInput · Deliverable   │
- │  src/company/policy.py     the spend guard — refuses cost of goods        │
- │  src/company/decisions.py  every judgement, with what it rejected         │
- │  src/company/incidents.py  every caught failure, with its recovery        │
- │  src/company/stages.py     intake → triage → source → verify → price →    │
- │                            deliver                                        │
+ │  src/company/harness.py     the spine: stages, turn cap, timeout, replay  │
+ │  src/company/models.py      WorkOrder · Draft · HumanInput · Product ·    │
+ │                             Offer · Deliverable                           │
+ │  src/company/compliance.py  what we may sell, and what must never travel  │
+ │  src/company/policy.py      the spend guard — refuses cost of goods       │
+ │  src/company/decisions.py   every judgement, with what it rejected        │
+ │  src/company/incidents.py   every caught failure, with its recovery       │
+ │  src/company/stages.py      intake → comply → triage → source → verify →  │
+ │                             build → price → deliver → market              │
+ │  src/company/adapters/http.py      https only, checked before opening     │
  │  src/company/adapters/pioneer.py   confidence on an open-weight model     │
- │  scripts/poll_ledger.py    rk_ read-only · publishes aggregates only      │
- │  web/index.html            storefront · task view · P&L · decisions       │
+ │  src/company/adapters/terac.py     three sourcing tiers, each labelled    │
+ │  scripts/poll_ledger.py     rk_ read-only · publishes aggregates only     │
+ │  web/index.html             storefront · task view · P&L · before/after · │
+ │                             decisions · outbound                          │
  └────┬──────────────┬───────────────────┬──────────────────┬────────────────┘
       │              │                   │                  │
       ▼              ▼                   ▼                  ▼
@@ -63,18 +68,24 @@ honest fit rather than a bolt-on.
 ## 2. Data flow
 
 ```
-  WorkOrder ──▶ Draft ──▶ [confidence < threshold?] ──▶ HumanInput ──▶ Deliverable
-  (pydantic)   (+conf)          THE DECISION            (real money)    (+margin)
-      │           │                   │                      │              │
-      │           │              ┌────┴────┐                 │              │
-      │           │        no ───┘         └─── yes          │              │
-      │           │     answer alone     ┌──────────────────▼───────────┐   │
-      │           │     $0.01 inference  │ policy.authorize_spend()     │   │
-      │           │                      │ · payment before cost of     │   │
-      │           │                      │   goods                      │   │
-      │           │                      │ · per-client exposure cap    │   │
-      │           │                      │ · total cap                  │   │
-      │           │                      └──────────────────────────────┘   │
+  WorkOrder ──▶ Screening ──▶ Draft ──▶ [confidence < threshold?] ──▶ HumanInput
+  (pydantic)   MAY WE SELL   (+conf)          THE DECISION            (real money)
+      │         THIS AT ALL      │                   │                      │
+      │            │             │              ┌────┴────┐                 │
+      │      no ───┘             │        no ───┘         └─── yes          │
+      │      HALT. every later   │     answer alone     ┌──────────────────▼───────────┐
+      │      stage records that  │     $0.01 inference  │ policy.authorize_spend()     │
+      │      it did nothing      │                      │ · payment before cost of     │
+      │                          │                      │   goods                      │
+      │                          │                      │ · per-client exposure cap    │
+      │                          │                      │ · total cap                  │
+      │                          │                      └──────────────────────────────┘
+      │                          │                                  │
+      │                          └──────────────┬───────────────────┘
+      │                                         ▼
+      │                            Product ──▶ Deliverable ──▶ Offer
+      │                          before/after    (+margin)     outbound, in
+      │                          IS THE ARTIFACT               the order's thread
       ▼           ▼                              ▼                          ▼
   ┌───────────────────────────────────────────────────────────────────────────┐
   │ every stage    ─▶ runs/<id>/NN-stage.json ─▶ --replay  byte-identical      │
@@ -101,6 +112,8 @@ honest fit rather than a bolt-on.
     └──── standing mandate ───▶ decides to buy a verdict
                                      │
                                      ├─ opens Issue ─────▶ intake   validate
+                                     │                     comply   may we sell it?
+                                     │                              redact · disclose
                                      │                     triage   draft + confidence
                                      │                              │
                                      │                     ┌────────┴────────┐
@@ -115,9 +128,11 @@ honest fit rather than a bolt-on.
                                      │                     │ approve_submission   │
                                      │                     │ = THE HUMAN IS PAID  │
                                      │                     └──────────────────────┘
+                                     │                     build    before / after
                                      │                     price    from real cost
                                      │  ◀── deliverable ── deliver
-                                     │
+                                     │  ◀── the offer ──── market   the next order,
+                                     │                              same thread
                                      ├─ evaluates: acceptable?
                                      ├─ settles PaymentIntent ──▶ Stripe
                                      │                              │

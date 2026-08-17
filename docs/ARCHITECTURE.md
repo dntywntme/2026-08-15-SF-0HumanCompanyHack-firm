@@ -17,6 +17,18 @@ intake ──> process ──> deliver
                                    calls nothing live
 ```
 
+The nine stages wired into that spine are the company's functions rather than a
+script's steps — `intake · comply · triage · source · verify · build · price ·
+deliver · market` — one per clause of the organizers' rule. The mapping, with
+what each one does not yet cover, is in [`REQUIREMENTS.md`](REQUIREMENTS.md).
+
+**A refused order halts the run.** `intake` (malformed) and `comply` (may not be
+sold) set `halt_reason`, and every stage after it returns immediately, recording
+that it ran and did nothing. Before that existed, a rejected work order still
+drew a draft, still bought human judgement and still produced a priced
+deliverable: the checkpoint said "refused" while the company spent the money
+anyway. A refusal that only appears in the log is not a control.
+
 ### The stage contract
 
 A stage is `(ctx: RunContext, state: dict) -> dict`. The returned dict is merged
@@ -116,6 +128,9 @@ cannot show a judge.
 | Failure mode | Detection | Recovery |
 |---|---|---|
 | Schema violation | `pydantic.ValidationError` | retry with `.errors()` fed back to the model |
+| Order we may not sell | `comply` gate, before any spend | run halts; every later stage records that it did nothing |
+| Personal data in order text | `comply` gate | redacted before it reaches a panel or a published page |
+| Redirected API base (`file://`, `http://`) | scheme check in `adapters/http.py` | refused before the opener sees it; the adapter degrades a tier |
 | Step repetition (MAST #1, 15.7%) | turn cap | abort before the stage; no partial checkpoint |
 | Non-termination (MAST #3, 12.4%) | wall-clock timeout | abandon the stage, return a degraded value |
 | Tool failure | exception at the tool boundary | degraded return, never raise into the spine |

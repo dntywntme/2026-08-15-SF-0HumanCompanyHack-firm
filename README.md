@@ -18,6 +18,7 @@ pay for the answer. That call, and its unit economics, are what this repo is.
 - [Live ledger, as JSON](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json) — every figure this project claims
 - **Counterparty:** [`…-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client) — the assistant agent that orders, judges, and pays
 - **What was submitted, and to which tracks:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
+- **The organizers' rule, clause by clause, with the gaps:** [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 - **Architecture, and the measurements behind it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Diagrams and file cross-reference:** [`docs/FLOWS.md`](docs/FLOWS.md)
 - **Demo runbook, and the offline fallback:** [`docs/DEMO.md`](docs/DEMO.md)
@@ -50,11 +51,11 @@ make run      # live run -> runs/demo/   (needs keys; falls back if absent)
 `make run RUN_ID=foo`.
 
 ```
-company [--run-id ID]           run identifier (default: UTC timestamp)
+company [--run-id ID]           run identifier (default: $RUN_ID, else a UTC timestamp)
         [--replay RUN_ID]       re-emit a prior run from checkpoints, calls nothing live
         [--runs-dir PATH]       where checkpoints live (default: runs/)
-        [--max-turns N]         hard turn budget for the whole run (default: 12)
-        [--stage-timeout S]     per-stage wall-clock budget in seconds (default: 30)
+        [--max-turns N]         hard turn budget for the whole run (default: $MAX_TURNS or 16)
+        [--stage-timeout S]     per-stage wall-clock budget (default: $STAGE_TIMEOUT_S or 30s)
 ```
 
 Every variable the code reads is documented in [`.env.example`](.env.example);
@@ -62,20 +63,28 @@ copy it to `.env`, which is gitignored.
 
 ## How it works
 
-Six stages, each checkpointed to `runs/<id>/` as it completes:
+Nine stages, each checkpointed to `runs/<id>/` as it completes. They are the
+functions a company has, not the steps a script needs — the organizers' rule
+asks for a company that builds, markets, sells, takes payment, stays compliant
+and makes hard calls, so each of those is a stage you can open:
 
 ```
-  intake ──▶ triage ──▶ source ──▶ verify ──▶ price ──▶ deliver
-  validate   confidence  buy the    approve    from     issue
-  as data    vs 0.65     judgement  = paid     real     comment
-                │                              cost
-                └── above threshold? answer alone, cost of goods $0.00
+  intake ─▶ comply ─▶ triage ─▶ source ─▶ verify ─▶ build ─▶ price ─▶ deliver ─▶ market
+  validate  may we    do I      buy the   approve   the      from     issue      offer,
+  as data   sell it?  know it?  judgement = paid    product  real     comment    in-thread
+              │         │                           with a   cost
+              │         └── above threshold? answer alone, cost of goods $0.00
+              └── refused? the run halts: every later stage records that it did nothing
 ```
 
 `triage` is the whole idea in one stage: Broker scores its own confidence, and
 below threshold it stops answering and escalates to a human instead of guessing.
 `verify` is the sharpest frame — `approve_submission` is the agent deciding
-whether a human gets paid.
+whether a human gets paid. `comply` is the cheapest control in the company: the
+only moment at which refusing an order is still free. `build` is where the
+event's mandatory before/after stops being a claim and becomes a field on the
+artifact. Clause-by-clause coverage, including what is missing:
+[`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
 
 ### The trust boundary
 
@@ -118,10 +127,13 @@ Honest accounting, because a "zero human company" claim invites scrutiny.
 |---|---|
 | Deterministic harness: stages, turn cap, wall-clock timeout, checkpoints, replay | **Built, tested, green** |
 | Error-mode instrumentation (Pydantic validation → visible recovery) | **Built** |
-| Terac: buy human expertise, measure before/after | **Live** — see the ledger |
+| Terac: buy human expertise, measure before/after | **Live** — see the ledger; the before/after is a field on the product |
 | Stripe: collect revenue | **Live in a sandbox**, labelled as such on the site |
+| Compliance gate: refuse what we may not sell, redact what must not travel | **Built, tested** — rules are hand-written, not counsel-reviewed |
+| Outbound | **Built, deliberately narrow** — the order's own thread and our own surface; no cold contact |
 | Trust boundary: Broker ⟷ client across separate repos | Enforced by credential scope today |
 | Governance rails (Builder/Integrator split) | Architecture, not operating history — branch protection is off |
+| A legal entity, accounting, tax, a dispute path | **Absent.** [What each would take](docs/REQUIREMENTS.md#what-is-genuinely-missing) |
 
 The per-stage timeout runs the stage on a worker thread and abandons it on
 expiry. Python cannot forcibly kill a thread, so a runaway stage keeps burning
@@ -132,3 +144,10 @@ ever needs to be truly killable.
 `WorkOrder` is defined in both repositories — a deliberate single-source-of-truth
 violation at the trust boundary, explained from the client's side in
 [its README](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client#limitations).
+
+The two published pages duplicate a handful of CSS rules (`.step`, `.quote`, the
+560px grid fix). That duplication has already shipped one bug — the mobile grid
+was fixed here and stayed broken on the client for an hour — and it is kept
+because vendoring a shared stylesheet across two repositories that share no
+build step would couple them more than the bug costs. The rules are marked in
+both files so the next edit is made in both.
