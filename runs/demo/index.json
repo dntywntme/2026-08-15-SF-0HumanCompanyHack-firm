@@ -1,10 +1,13 @@
 {
   "stages": [
     "00-intake",
-    "01-triage",
-    "02-source",
-    "03-verify",
-    "04-price",
-    "05-deliver"
+    "01-comply",
+    "02-triage",
+    "03-source",
+    "04-verify",
+    "05-build",
+    "06-price",
+    "07-deliver",
+    "08-market"
   ]
 }

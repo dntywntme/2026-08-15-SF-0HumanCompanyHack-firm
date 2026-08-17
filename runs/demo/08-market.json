@@ -1,0 +1,200 @@
+{
+  "index": 8,
+  "output": {
+    "decisions": [
+      {
+        "because": "well-formed, inside budget, and the question is answerable",
+        "chose": "accept",
+        "cost_usd": "0.00",
+        "kind": "accept_work",
+        "question": "accept this order?",
+        "rejected": [
+          "refuse",
+          "ask the client to clarify"
+        ],
+        "reversible": true,
+        "stage": "intake"
+      },
+      {
+        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "chose": "clear \u2014 opinion research, with disclosures attached",
+        "cost_usd": "0.00",
+        "kind": "screen_order",
+        "question": "may the company sell an answer to this?",
+        "rejected": [
+          "refuse the order",
+          "clear it with no disclosures"
+        ],
+        "reversible": true,
+        "stage": "comply"
+      },
+      {
+        "because": "self-assessed confidence 0.31 against threshold 0.65; unknowns: which one real buyers actually prefer; whether 'AI' reads as generic in 2026",
+        "chose": "no \u2014 escalate",
+        "cost_usd": "0.00",
+        "kind": "self_assess",
+        "question": "do I know this well enough to sell the answer?",
+        "rejected": [
+          "answer alone"
+        ],
+        "reversible": true,
+        "stage": "triage"
+      },
+      {
+        "because": "within policy",
+        "chose": "spend",
+        "cost_usd": "9.00",
+        "kind": "buy_labor",
+        "question": "commit 9.00 USD of cost of goods?",
+        "rejected": [
+          "refuse"
+        ],
+        "reversible": false,
+        "stage": "source"
+      },
+      {
+        "because": "no live source reachable; replayed the last known-good result",
+        "chose": "recorded tier",
+        "cost_usd": "0.00",
+        "kind": "buy_labor",
+        "question": "where should this judgement come from?",
+        "rejected": [
+          "terac",
+          "human"
+        ],
+        "reversible": true,
+        "stage": "source"
+      },
+      {
+        "because": "on-topic, gives a reason, and answers the question asked: 'B \u2014 it says what it does for me, not what it is.'",
+        "chose": "approve \u2014 pay the expert",
+        "cost_usd": "4.50",
+        "kind": "pay_worker",
+        "question": "approve submission 1 of 2?",
+        "rejected": [
+          "reject \u2014 withhold payment",
+          "request a replacement"
+        ],
+        "reversible": false,
+        "stage": "verify"
+      },
+      {
+        "because": "on-topic, gives a reason, and answers the question asked: \"B \u2014 'ship faster' is on every landing page I have ever seen.\"",
+        "chose": "approve \u2014 pay the expert",
+        "cost_usd": "4.50",
+        "kind": "pay_worker",
+        "question": "approve submission 2 of 2?",
+        "rejected": [
+          "reject \u2014 withhold payment",
+          "request a replacement"
+        ],
+        "reversible": false,
+        "stage": "verify"
+      },
+      {
+        "because": "2 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
+        "chose": "no \u2014 the panel contradicts the draft",
+        "cost_usd": "0.00",
+        "kind": "self_assess",
+        "question": "does the human panel agree with the agent's draft?",
+        "rejected": [
+          "keep the agent's answer",
+          "average the two"
+        ],
+        "reversible": true,
+        "stage": "verify"
+      },
+      {
+        "because": "the panel overturned a draft the agent held at 0.31 confidence, so the bought judgement is the product and the draft ships beside it as the before",
+        "chose": "ship the panel's answer",
+        "cost_usd": "0.00",
+        "kind": "build_product",
+        "question": "what do we ship: the agent's draft, or the answer the panel gave?",
+        "rejected": [
+          "ship the draft alone",
+          "ship both and let the customer choose"
+        ],
+        "reversible": true,
+        "stage": "build"
+      },
+      {
+        "because": "cost of goods 9.00 at 2.0x, clamped to the 0.50-1.00 band set for the event",
+        "chose": "1.00 USD",
+        "cost_usd": "0.00",
+        "kind": "set_price",
+        "question": "what should this cost the customer?",
+        "rejected": [
+          "cost-plus without a cap (18.000)",
+          "free"
+        ],
+        "reversible": true,
+        "stage": "price"
+      },
+      {
+        "because": "the answer is sourced, priced, and within the client's stated budget",
+        "chose": "release",
+        "cost_usd": "0.00",
+        "kind": "release",
+        "question": "release the deliverable?",
+        "rejected": [
+          "hold until payment clears",
+          "refund and decline"
+        ],
+        "reversible": false,
+        "stage": "deliver"
+      },
+      {
+        "because": "the only audience that opted in is the counterparty already in this thread; every other channel available would reach people who did not ask, and the margin on a one-dollar verdict does not survive being disliked",
+        "chose": "reply in the order's own thread and publish to our own surface",
+        "cost_usd": "0.00",
+        "kind": "go_to_market",
+        "question": "who do we tell about this run, and how?",
+        "rejected": [
+          "cold email to scraped contacts \u2014 nobody on that list asked us for anything",
+          "SMS/iMessage to a real phone number \u2014 the recipient never opted in",
+          "unsolicited DMs to other teams' agents \u2014 the same problem with extra steps"
+        ],
+        "reversible": true,
+        "stage": "market"
+      },
+      {
+        "because": "the run's own arithmetic is the only claim we can support; quoting a list-price margin here would be marketing a number this company has never earned",
+        "chose": "price 1.00 against a unit cost of 9.00, stated as a loss",
+        "cost_usd": "0.00",
+        "kind": "go_to_market",
+        "question": "what claim do we make in the offer?",
+        "rejected": [
+          "quote the 65% gross margin the list price would produce",
+          "omit the cost of goods and quote the price alone"
+        ],
+        "reversible": true,
+        "stage": "market"
+      }
+    ],
+    "incidents": [
+      {
+        "category": "tool_failure",
+        "detail": "live panel unavailable; used the recorded tier",
+        "errors": [],
+        "recovery": "answered from the best judgement available and labelled it as such",
+        "stage": "source"
+      }
+    ],
+    "offer": {
+      "audience": "assistant agents holding a standing mandate and a per-order budget",
+      "channel": "issue-thread",
+      "declined_channels": [
+        "cold email to scraped contacts \u2014 nobody on that list asked us for anything",
+        "SMS/iMessage to a real phone number \u2014 the recipient never opted in",
+        "unsolicited DMs to other teams' agents \u2014 the same problem with extra steps"
+      ],
+      "headline": "An answer that tells you when it had to be bought from a person.",
+      "price_usd": "1.00",
+      "proof": "On the order just delivered, the agent held its own draft at 0.31 confidence and was overturned by the people it paid. Judgement cost 9.00 USD (recorded tier); the customer paid 1.00 USD. Both figures are published.",
+      "unit_cost_usd": "9.00"
+    },
+    "stage": "market"
+  },
+  "run_id": "demo",
+  "stage": "market"
+}

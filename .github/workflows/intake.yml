@@ -74,12 +74,22 @@ jobs:
               PIPELINE, run_id="issue-${{ github.event.issue.number }}", initial_state=state
           )
           last = result.records[-1]["output"] if result.records else {}
+          # A halted order produces no product and no offer, so pull each from
+          # whichever stage made it rather than from the final checkpoint.
+          def emitted(key):
+              for record in result.records:
+                  if record["output"].get(key):
+                      return record["output"][key]
+              return None
+
           pathlib.Path("reply.md").write_text(
               json.dumps(
                   {
                       "ok": result.ok,
                       "error": result.error,
                       "deliverable": last.get("deliverable"),
+                      "product": emitted("product"),
+                      "offer": emitted("offer"),
                       "decisions": last.get("decisions", []),
                       "incidents": last.get("incidents", []),
                   },
@@ -97,6 +107,7 @@ jobs:
 
           r = json.loads(pathlib.Path("reply.md").read_text())
           d = r.get("deliverable") or {}
+          p = r.get("product") or {}
           lines = ["**Broker** — order processed. No human was involved.", ""]
           if d:
               lines += [
@@ -108,6 +119,27 @@ jobs:
               ]
           else:
               lines.append(f"The order was not fulfilled: `{r.get('error') or 'rejected at intake'}`")
+          # The before/after is the deliverable's evidence, not a footnote: it is
+          # what the customer paid for and what the event's rules ask us to show.
+          if p:
+              lines += ["", "<details><summary>What the human input changed</summary>", ""]
+              lines += [
+                  f"**Before** — the agent alone, confidence "
+                  f"{float(p.get('before_confidence', 0)):.2f}:",
+                  "",
+                  f"> {p.get('before','')}",
+                  "",
+                  "**After** — once it bought judgement:" if p.get("changed")
+                  else "**After** — unchanged; the purchase confirmed the draft:",
+                  "",
+                  f"> {p.get('after','')}",
+              ]
+              if p.get("evidence"):
+                  lines += ["", "What the panel said:", ""]
+                  lines += [f"- {e}" for e in p["evidence"]]
+              if p.get("disclosures"):
+                  lines += ["", "_" + " · ".join(p["disclosures"]) + "_"]
+              lines += ["", "</details>"]
           if r.get("decisions"):
               lines += ["", "<details><summary>Decisions</summary>", ""]
               for x in r["decisions"]:
@@ -121,6 +153,22 @@ jobs:
               for x in r["incidents"]:
                   lines.append(f"- **{x['category']}** ({x['stage']}) — {x['detail']} → {x['recovery']}")
               lines += ["", "</details>"]
+          # Outbound, in the only channel the customer opted into: the thread
+          # they opened. The market stage decided this, and it is the whole of
+          # the company's marketing surface.
+          o = r.get("offer") or {}
+          if o:
+              lines += [
+                  "",
+                  "---",
+                  "",
+                  f"**{o.get('headline','')}**",
+                  "",
+                  o.get("proof", ""),
+                  "",
+                  f"_Next order: reply here with a fenced JSON work order. "
+                  f"${o.get('price_usd')} a verdict._",
+              ]
 
           req = urllib.request.Request(
               "https://api.github.com/repos/${{ github.repository }}/issues/"

@@ -1,4 +1,4 @@
-"""The six stages the company actually runs.
+"""The nine stages the company actually runs.
 
 Each stage is ``(ctx, state) -> dict`` and must be deterministic: replay
 reproduces recorded output byte-for-byte, so nothing here may return a
@@ -8,7 +8,26 @@ with no keys.
 
 The stages exist to make one argument checkable: every judgement below is made
 by the company, recorded with what it rejected, and no human appears in any of
-them.
+them. They are laid out as the functions a company actually has rather than as
+the steps a script happens to need:
+
+===========  ====================================================================
+``intake``   sell to customers — take the order, or refuse it as malformed
+``comply``   legal/compliance — may we sell this at all, and what must we say
+``triage``   the hard decision — do we know this, or do we buy the answer
+``source``   procurement — commit real money to real people, under a spend guard
+``verify``   payroll — approve a submission, which is what pays the expert
+``build``    build the product — the verdict brief, with its before and after
+``price``    set the price from what the answer actually cost
+``deliver``  hand it over
+``market``   outbound — turn the finished run into the offer for the next one
+===========  ====================================================================
+
+**A refused order stops.** ``intake`` and ``comply`` can set ``halt_reason``,
+and every stage after them returns immediately when it is set. Without that a
+rejected work order still drew a draft, still bought human judgement, and still
+produced a priced deliverable — the checkpoint said "refused" while the company
+spent the money anyway.
 """
 
 from __future__ import annotations
@@ -17,10 +36,11 @@ from decimal import Decimal
 from typing import Any
 
 from company.adapters.terac import obtain_human_input
+from company.compliance import screen
 from company.decisions import DecisionLog
 from company.harness import RunContext, Stage
 from company.incidents import IncidentLog, summarize_validation_error
-from company.models import Deliverable, Draft, WorkOrder, price_from_cogs
+from company.models import Deliverable, Draft, Offer, Product, WorkOrder, price_from_cogs
 from company.policy import Policy, authorize_spend
 
 # The demo order: a question an LLM cannot answer from its weights, because the
@@ -56,6 +76,21 @@ HUMAN_INPUT: dict[str, Any] = {
     "participants": 2,
 }
 
+# What the company sells, in one line, to the only audience it has: other agents
+# holding a budget. Marketing copy is a constant so that a run cannot invent a
+# claim -- the numbers around it come from the run itself.
+OFFER_HEADLINE = "An answer that tells you when it had to be bought from a person."
+OFFER_AUDIENCE = "assistant agents holding a standing mandate and a per-order budget"
+
+# Outbound channels the company has and deliberately does not use. Recorded as
+# rejected alternatives on every marketing decision, because an outbound
+# function that never declines a channel is a spam function.
+DECLINED_CHANNELS = [
+    "cold email to scraped contacts — nobody on that list asked us for anything",
+    "SMS/iMessage to a real phone number — the recipient never opted in",
+    "unsolicited DMs to other teams' agents — the same problem with extra steps",
+]
+
 
 def _log(state: dict[str, Any]) -> tuple[DecisionLog, IncidentLog, Policy]:
     """Logs live in state so every stage appends to the same run.
@@ -71,6 +106,22 @@ def _log(state: dict[str, Any]) -> tuple[DecisionLog, IncidentLog, Policy]:
     if "_policy" not in state:
         state["_policy"] = Policy.from_env()
     return state["_decisions"], state["_incidents"], state["_policy"]
+
+
+def _halted(state: dict[str, Any]) -> str | None:
+    """Why this order stopped being worked, if it did.
+
+    Set by ``intake`` (malformed) or ``comply`` (may not be sold). Every stage
+    downstream checks it before doing anything that costs money or produces an
+    artifact, so a refusal is a refusal all the way through the run.
+    """
+    reason = state.get("halt_reason")
+    return reason if isinstance(reason, str) and reason else None
+
+
+def _stop(name: str, reason: str, state: dict[str, Any]) -> dict[str, Any]:
+    """A stage that ran, did nothing, and says why. Still checkpointed."""
+    return {"stage": name, "skipped_because": reason, **_render(state)}
 
 
 def intake(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
@@ -95,7 +146,12 @@ def intake(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
             "the payload does not satisfy the work-order contract",
             rejected=["accept"],
         )
-        return {"stage": "intake", "accepted": False, **_render(state)}
+        return {
+            "stage": "intake",
+            "accepted": False,
+            "halt_reason": "the payload does not satisfy the work-order contract",
+            **_render(state),
+        }
 
     decisions.record(
         "accept_work",
@@ -105,12 +161,91 @@ def intake(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         "well-formed, inside budget, and the question is answerable",
         rejected=["refuse", "ask the client to clarify"],
     )
-    return {"stage": "intake", "accepted": True, "order": order.payload(), **_render(state)}
+    return {
+        "stage": "intake",
+        "accepted": True,
+        "order": order.payload(),
+        "halt_reason": None,
+        **_render(state),
+    }
+
+
+def comply(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
+    """Legal and compliance, before anything is drafted or bought.
+
+    Two questions, in this order: may we sell this at all, and what must travel
+    with it if we do. Both are answered before a single dollar of cost of goods
+    is committed, which is the only point at which refusing is still free.
+    """
+    decisions, incidents, _ = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("comply", halt, state)
+
+    order = state.get("order", DEMO_ORDER)
+    screening = screen(order["question"])
+
+    if screening.redactions:
+        incidents.record(
+            "personal_data",
+            "comply",
+            f"order text carried {', '.join(screening.redactions)}",
+            "redacted before the order was forwarded to a panel or published",
+        )
+
+    if not screening.cleared:
+        incidents.record(
+            "compliance_refusal",
+            "comply",
+            f"{screening.refused_rule}: the order asks for something we may not sell",
+            "order refused at the gate; no draft written, no cost of goods committed",
+        )
+        decisions.record(
+            "screen_order",
+            "comply",
+            "may the company sell an answer to this?",
+            "refuse — outside what we are licensed to sell",
+            screening.refused_because,
+            rejected=[
+                "answer it anyway and disclaim",
+                "buy a professional's judgement and resell it",
+            ],
+        )
+        return {
+            "stage": "comply",
+            "cleared": False,
+            "screening": screening.payload(),
+            "halt_reason": screening.refused_because,
+            **_render(state),
+        }
+
+    decisions.record(
+        "screen_order",
+        "comply",
+        "may the company sell an answer to this?",
+        "clear — opinion research, with disclosures attached",
+        "the question asks what people think rather than for advice a licensed "
+        f"professional must give; {len(screening.disclosures)} disclosures travel "
+        f"with the deliverable; personal data removed: "
+        f"{', '.join(screening.redactions) or 'none found'}",
+        rejected=["refuse the order", "clear it with no disclosures"],
+    )
+    return {
+        "stage": "comply",
+        "cleared": True,
+        "screening": screening.payload(),
+        "halt_reason": None,
+        **_render(state),
+    }
 
 
 def triage(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     """Draft an answer, then judge whether it is good enough to sell."""
     decisions, _, policy = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("triage", halt, state)
+
     ctx.spend_turn()  # the model call
     draft = Draft(**state.get("draft", AGENT_DRAFT))
     confident = draft.confidence >= policy.confidence_threshold
@@ -135,6 +270,10 @@ def triage(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
 def source(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     """Buy human judgement, if policy allows it."""
     decisions, incidents, policy = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("source", halt, state)
+
     if not state.get("escalate"):
         return {"stage": "source", "human": None, "cogs_usd": "0.00", **_render(state)}
 
@@ -192,6 +331,10 @@ def source(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
 def verify(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     """Reconcile what the humans said against what the agent guessed."""
     decisions, _, _ = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("verify", halt, state)
+
     human = state.get("human")
     if not human:
         return {"stage": "verify", "sourced_from": "agent", **_render(state)}
@@ -227,9 +370,74 @@ def verify(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# The answer the company ships once it has bought judgement. Recorded rather
+# than generated so the run replays identically; the panel's own words are
+# carried alongside it as evidence.
+SOURCED_ANSWER = (
+    "Headline B wins. Buyers said it states the benefit rather than the "
+    "category, and that 'ship faster' reads as generic."
+)
+
+
+def build(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
+    """Build the product: the verdict brief, with its before and after.
+
+    This is where the company's output stops being a stage result and becomes a
+    thing a customer receives. The before/after is the artifact, not a claim
+    about one: the agent's own draft is shipped next to the answer that replaced
+    it, so a reader can see exactly what the purchased judgement changed — or
+    that it changed nothing, which the product is required to be able to say.
+    """
+    decisions, _, _ = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("build", halt, state)
+
+    draft = state.get("draft", AGENT_DRAFT)
+    human = state.get("human")
+    screening = state.get("screening", {})
+
+    before = draft["answer"]
+    after = SOURCED_ANSWER if human else before
+    changed = after.strip() != before.strip()
+
+    product = Product(
+        work_order_id=state.get("order", DEMO_ORDER)["id"],
+        before=before,
+        before_confidence=draft["confidence"],
+        after=after,
+        changed=changed,
+        evidence=list(human["responses"]) if human else [],
+        disclosures=list(screening.get("disclosures", [])),
+    )
+
+    decisions.record(
+        "build_product",
+        "build",
+        "what do we ship: the agent's draft, or the answer the panel gave?",
+        "ship the panel's answer" if changed else "ship the agent's draft",
+        (
+            f"the panel overturned a draft the agent held at "
+            f"{product.before_confidence:.2f} confidence, so the bought judgement "
+            f"is the product and the draft ships beside it as the before"
+            if changed
+            else "no judgement was bought for this order, so the draft is the product "
+            "and the before and after are the same by construction"
+        ),
+        rejected=["ship the draft alone", "ship both and let the customer choose"]
+        if changed
+        else ["buy judgement anyway to produce a difference"],
+    )
+    return {"stage": "build", "product": product.payload(), **_render(state)}
+
+
 def price(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     """Set the customer price from what the answer actually cost."""
     decisions, _, policy = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("price", halt, state)
+
     cogs = Decimal(str(state.get("cogs_usd", "0.00")))
     amount = price_from_cogs(
         cogs, markup=policy.markup, floor=policy.min_price_usd, ceiling=policy.max_price_usd
@@ -247,18 +455,17 @@ def price(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
 
 
 def deliver(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
-    """Hand over the answer and record the unit economics."""
+    """Hand over the product and record the unit economics."""
     decisions, _, _ = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("deliver", halt, state)
+
+    product = state.get("product") or {}
     human = state.get("human")
-    answer = (
-        "Headline B wins. Buyers said it states the benefit rather than the "
-        "category, and that 'ship faster' reads as generic."
-        if human
-        else state.get("draft", AGENT_DRAFT)["answer"]
-    )
     deliverable = Deliverable(
         work_order_id=state.get("order", DEMO_ORDER)["id"],
-        answer=answer,
+        answer=product.get("after") or state.get("draft", AGENT_DRAFT)["answer"],
         sourced_from="agent+human" if human else "agent",
         cogs_usd=Decimal(str(state.get("cogs_usd", "0.00"))),
         price_usd=Decimal(str(state.get("price_usd", "1.00"))),
@@ -273,6 +480,71 @@ def deliver(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         reversible=False,
     )
     return {"stage": "deliver", "deliverable": deliverable.payload(), **_render(state)}
+
+
+def market(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
+    """Outbound: turn the finished run into the offer for the next one.
+
+    The company has exactly one honest marketing asset — the run it just
+    completed — and exactly one audience it can reach without contacting people
+    who never asked to hear from it: the customer already in the thread, and its
+    own public surface. So the offer is written from the run's real arithmetic,
+    posted where the order arrived, and the channels that would have reached
+    strangers are recorded as declined with the reason.
+    """
+    decisions, _, _ = _log(state)
+    halt = _halted(state)
+    if halt:
+        return _stop("market", halt, state)
+
+    price_usd = Decimal(str(state.get("price_usd", "0.00")))
+    cogs = Decimal(str(state.get("cogs_usd", "0.00")))
+    product = state.get("product") or {}
+    tier = state.get("source_tier", "recorded")
+
+    proof = (
+        f"On the order just delivered, the agent held its own draft at "
+        f"{product.get('before_confidence', 0):.2f} confidence and "
+        f"{'was overturned by' if product.get('changed') else 'was confirmed by'} "
+        f"the people it paid. Judgement cost {cogs} USD ({tier} tier); the "
+        f"customer paid {price_usd} USD. Both figures are published."
+    )
+
+    offer = Offer(
+        headline=OFFER_HEADLINE,
+        proof=proof,
+        price_usd=price_usd,
+        unit_cost_usd=cogs,
+        channel="issue-thread",
+        audience=OFFER_AUDIENCE,
+        declined_channels=list(DECLINED_CHANNELS),
+    )
+
+    decisions.record(
+        "go_to_market",
+        "market",
+        "who do we tell about this run, and how?",
+        "reply in the order's own thread and publish to our own surface",
+        "the only audience that opted in is the counterparty already in this "
+        "thread; every other channel available would reach people who did not "
+        "ask, and the margin on a one-dollar verdict does not survive being "
+        "disliked",
+        rejected=DECLINED_CHANNELS,
+    )
+    decisions.record(
+        "go_to_market",
+        "market",
+        "what claim do we make in the offer?",
+        f"price {price_usd} against a unit cost of {cogs}, stated as a loss",
+        "the run's own arithmetic is the only claim we can support; quoting a "
+        "list-price margin here would be marketing a number this company has "
+        "never earned",
+        rejected=[
+            "quote the 65% gross margin the list price would produce",
+            "omit the cost of goods and quote the price alone",
+        ],
+    )
+    return {"stage": "market", "offer": offer.payload(), **_render(state)}
 
 
 def _render(state: dict[str, Any]) -> dict[str, Any]:
@@ -297,9 +569,12 @@ def initial_state(**overrides: Any) -> dict[str, Any]:
 
 PIPELINE: list[Stage] = [
     Stage("intake", intake),
+    Stage("comply", comply),
     Stage("triage", triage),
     Stage("source", source),
     Stage("verify", verify),
+    Stage("build", build),
     Stage("price", price),
     Stage("deliver", deliver),
+    Stage("market", market),
 ]

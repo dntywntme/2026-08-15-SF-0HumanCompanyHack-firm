@@ -17,6 +17,7 @@
         "stage": "intake"
       }
     ],
+    "halt_reason": null,
     "incidents": [],
     "order": {
       "budget_usd": "1.00",

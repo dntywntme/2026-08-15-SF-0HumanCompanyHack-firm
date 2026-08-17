@@ -30,13 +30,16 @@ from pydantic import BaseModel, ConfigDict, Field
 # would otherwise make.
 Kind = Literal[
     "accept_work",  # take this order, or refuse it
+    "screen_order",  # legal/compliance: may we sell this at all, and on what terms
     "self_assess",  # do I know the answer, or not
     "buy_labor",  # spend cost of goods on human input
     "spend_guard",  # refuse to spend, protecting the balance
     "pay_worker",  # approve a submission: a human gets paid
     "withhold_pay",  # reject a submission: a human does not get paid
+    "build_product",  # what to ship, and whether the bought judgement changed it
     "set_price",  # what to charge the customer
     "release",  # hand over the deliverable, or hold it
+    "go_to_market",  # what to say about this run, and where to say it
 ]
 
 Money = Annotated[Decimal, Field(ge=0, decimal_places=2)]

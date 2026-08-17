@@ -1,5 +1,5 @@
 {
-  "index": 4,
+  "index": 6,
   "output": {
     "decisions": [
       {
@@ -14,6 +14,19 @@
         ],
         "reversible": true,
         "stage": "intake"
+      },
+      {
+        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "chose": "clear \u2014 opinion research, with disclosures attached",
+        "cost_usd": "0.00",
+        "kind": "screen_order",
+        "question": "may the company sell an answer to this?",
+        "rejected": [
+          "refuse the order",
+          "clear it with no disclosures"
+        ],
+        "reversible": true,
+        "stage": "comply"
       },
       {
         "because": "self-assessed confidence 0.31 against threshold 0.65; unknowns: which one real buyers actually prefer; whether 'AI' reads as generic in 2026",
@@ -40,20 +53,20 @@
         "stage": "source"
       },
       {
-        "because": "the live study returned approved submissions",
-        "chose": "terac tier",
+        "because": "no live source reachable; replayed the last known-good result",
+        "chose": "recorded tier",
         "cost_usd": "0.00",
         "kind": "buy_labor",
         "question": "where should this judgement come from?",
         "rejected": [
-          "human",
-          "recorded"
+          "terac",
+          "human"
         ],
         "reversible": true,
         "stage": "source"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'The price or a discount'",
+        "because": "on-topic, gives a reason, and answers the question asked: 'B \u2014 it says what it does for me, not what it is.'",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -66,7 +79,7 @@
         "stage": "verify"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'How the product described itself'",
+        "because": "on-topic, gives a reason, and answers the question asked: \"B \u2014 'ship faster' is on every landing page I have ever seen.\"",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -79,7 +92,7 @@
         "stage": "verify"
       },
       {
-        "because": "0 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
+        "because": "2 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
         "chose": "no \u2014 the panel contradicts the draft",
         "cost_usd": "0.00",
         "kind": "self_assess",
@@ -90,6 +103,19 @@
         ],
         "reversible": true,
         "stage": "verify"
+      },
+      {
+        "because": "the panel overturned a draft the agent held at 0.31 confidence, so the bought judgement is the product and the draft ships beside it as the before",
+        "chose": "ship the panel's answer",
+        "cost_usd": "0.00",
+        "kind": "build_product",
+        "question": "what do we ship: the agent's draft, or the answer the panel gave?",
+        "rejected": [
+          "ship the draft alone",
+          "ship both and let the customer choose"
+        ],
+        "reversible": true,
+        "stage": "build"
       },
       {
         "because": "cost of goods 9.00 at 2.0x, clamped to the 0.50-1.00 band set for the event",
@@ -105,7 +131,15 @@
         "stage": "price"
       }
     ],
-    "incidents": [],
+    "incidents": [
+      {
+        "category": "tool_failure",
+        "detail": "live panel unavailable; used the recorded tier",
+        "errors": [],
+        "recovery": "answered from the best judgement available and labelled it as such",
+        "stage": "source"
+      }
+    ],
     "price_usd": "1.00",
     "stage": "price"
   },

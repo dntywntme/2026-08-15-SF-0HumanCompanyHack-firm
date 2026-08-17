@@ -1,0 +1,51 @@
+{
+  "index": 1,
+  "output": {
+    "cleared": true,
+    "decisions": [
+      {
+        "because": "well-formed, inside budget, and the question is answerable",
+        "chose": "accept",
+        "cost_usd": "0.00",
+        "kind": "accept_work",
+        "question": "accept this order?",
+        "rejected": [
+          "refuse",
+          "ask the client to clarify"
+        ],
+        "reversible": true,
+        "stage": "intake"
+      },
+      {
+        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "chose": "clear \u2014 opinion research, with disclosures attached",
+        "cost_usd": "0.00",
+        "kind": "screen_order",
+        "question": "may the company sell an answer to this?",
+        "rejected": [
+          "refuse the order",
+          "clear it with no disclosures"
+        ],
+        "reversible": true,
+        "stage": "comply"
+      }
+    ],
+    "halt_reason": null,
+    "incidents": [],
+    "screening": {
+      "cleared": true,
+      "disclosures": [
+        "Produced by an autonomous agent. No human at Broker reviewed this answer.",
+        "Opinion research, not legal, medical or financial advice.",
+        "Includes judgement purchased from identity-verified people via Terac, who were paid for it."
+      ],
+      "redactions": [],
+      "refused_because": "",
+      "refused_rule": "",
+      "safe_question": "Which headline is more compelling: 'Ship faster with AI' or 'Your on-call engineer that never sleeps'?"
+    },
+    "stage": "comply"
+  },
+  "run_id": "demo",
+  "stage": "comply"
+}

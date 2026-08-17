@@ -70,6 +70,47 @@ class HumanInput(Contract):
     participants: int = Field(ge=1)
 
 
+class Product(Contract):
+    """What the company actually built, with the improvement made visible.
+
+    The event's mandatory requirement is real human input that makes the project
+    *measurably* better, shown as a clear before and after. That is a property of
+    an artifact, not of a paragraph, so it is one: ``before`` is what the agent
+    would have shipped alone, ``after`` is what shipped once judgement was
+    bought, and ``changed`` says whether the purchase moved the answer at all.
+
+    ``changed`` is allowed to be False. An honest before/after has to be able to
+    report that the money bought confirmation rather than a correction.
+    """
+
+    work_order_id: str
+    before: str = Field(min_length=1)
+    before_confidence: float = Field(ge=0.0, le=1.0)
+    after: str = Field(min_length=1)
+    changed: bool
+    # The panel's own words, which are what the customer is really buying.
+    evidence: list[str] = Field(default_factory=list)
+    disclosures: list[str] = Field(default_factory=list)
+
+
+class Offer(Contract):
+    """The outbound artifact: what the company says to win the next order.
+
+    Written from the run that just completed, so the claim on it is the run's
+    own arithmetic rather than copy. ``channel`` records where it was actually
+    put, and ``declined_channels`` records the ones the company chose not to use
+    and why — an outbound function that never says no is a spam function.
+    """
+
+    headline: str = Field(min_length=1)
+    proof: str = Field(min_length=1)
+    price_usd: Money
+    unit_cost_usd: Money
+    channel: Literal["issue-thread", "own-surface", "none"]
+    audience: str = Field(min_length=1)
+    declined_channels: list[str] = Field(default_factory=list)
+
+
 class Deliverable(Contract):
     """What the customer receives, with its unit economics attached."""
 

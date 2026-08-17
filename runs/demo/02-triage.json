@@ -1,5 +1,5 @@
 {
-  "index": 1,
+  "index": 2,
   "output": {
     "decisions": [
       {
@@ -14,6 +14,19 @@
         ],
         "reversible": true,
         "stage": "intake"
+      },
+      {
+        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "chose": "clear \u2014 opinion research, with disclosures attached",
+        "cost_usd": "0.00",
+        "kind": "screen_order",
+        "question": "may the company sell an answer to this?",
+        "rejected": [
+          "refuse the order",
+          "clear it with no disclosures"
+        ],
+        "reversible": true,
+        "stage": "comply"
       },
       {
         "because": "self-assessed confidence 0.31 against threshold 0.65; unknowns: which one real buyers actually prefer; whether 'AI' reads as generic in 2026",

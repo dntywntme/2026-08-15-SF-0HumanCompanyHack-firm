@@ -25,6 +25,8 @@ Category = Literal[
     "budget_refused",  # the COGS guard declined to spend
     "injection_attempt",  # work order tried to issue instructions
     "payment_failed",  # charge declined, abandoned or underpaid
+    "compliance_refusal",  # the order asked for something we may not sell
+    "personal_data",  # order text carried data that must not reach a panel
 ]
 
 

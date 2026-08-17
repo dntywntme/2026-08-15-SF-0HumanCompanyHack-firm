@@ -23,6 +23,12 @@
         padding: 1rem; background: var(--surface-lift); }
   .hl h3 { margin: 0 0 .35rem; font-size: 1.05rem; }
   .muted { color: var(--text-muted); }
+  /* Before/after: the draft is quoted as history, the shipped answer as fact.
+     Colour is the only thing separating them, so it has to carry that meaning.
+     These rules are duplicated verbatim on the client page — see README. */
+  .quote { border-left: 2px solid var(--border); padding-left: .9rem; margin: .6rem 0;
+           color: var(--text-muted); }
+  .quote.shipped { border-left-color: var(--primary); color: var(--text); }
   .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
   .mono { font-family: var(--font-mono); font-size: .85rem; }
   [hidden] { display: none !important; }
@@ -177,6 +183,32 @@
 
 
 
+  <!-- The mandatory requirement of the event, as an artifact rather than a
+       claim: what the agent would have shipped alone, beside what shipped after
+       it paid people for judgement. -->
+  <section class="chart-card" id="beforeafter">
+    <h2 class="chart-title">What the human input changed</h2>
+    <p class="muted">
+      The agent drafts an answer and scores its own confidence in it. Below
+      threshold it stops, buys judgement from identity-verified people, and ships
+      what they said instead. Both versions are published, so the improvement is
+      something you can read rather than something we assert.
+    </p>
+    <div class="grid2">
+      <div>
+        <p class="eyebrow">Before &mdash; the agent alone <span class="mono muted" id="conf"></span></p>
+        <p class="quote" id="before">&mdash;</p>
+      </div>
+      <div>
+        <p class="eyebrow">After &mdash; once it bought judgement</p>
+        <p class="quote shipped" id="after">&mdash;</p>
+      </div>
+    </div>
+    <p class="eyebrow">What the panel actually said</p>
+    <div id="evidence"></div>
+    <p class="mono muted" id="disclosures"></p>
+  </section>
+
   <section class="chart-card">
     <h2 class="chart-title">Decisions</h2>
     <p class="muted">Every judgement the company made, in order, with what it rejected and what it cost. No human appears in any of them.</p>
@@ -194,6 +226,26 @@
     <h2 class="chart-title">Run</h2>
     <div class="chips" id="stages"></div>
     <p class="empty" id="stages-note">loading checkpoints&hellip;</p>
+  </section>
+
+  <!-- Outbound. The company's only honest marketing asset is the run it just
+       finished, and its only opted-in audience is the counterparty already in
+       the thread. Both facts are on the page rather than in a pitch. -->
+  <section class="chart-card" id="outbound">
+    <h2 class="chart-title">Outbound</h2>
+    <p class="muted">
+      Written by the <code>market</code> stage from the run above, not by us. The
+      claim on it is the run&rsquo;s own arithmetic, and the channels the company
+      decided <em>not</em> to use are published beside it.
+    </p>
+    <div class="hl">
+      <h3 id="offer-headline">&mdash;</h3>
+      <p id="offer-proof" class="muted">&mdash;</p>
+      <p class="mono muted">audience: <span id="offer-audience">&mdash;</span> &middot;
+         placed in: <span id="offer-channel">&mdash;</span></p>
+    </div>
+    <p class="eyebrow">Channels it declined, and why</p>
+    <div id="offer-declined"></div>
   </section>
 
   <section class="chart-card">
@@ -335,6 +387,42 @@
       c.textContent = s.stage;
       chips.appendChild(c);
     }
+    // Stage artifacts. Read from whichever checkpoint produced them rather than
+    // from the last one: a refused order halts, and then they never exist.
+    const from = (key) => found.find((s) => s.output?.[key])?.output?.[key];
+    const esc = (s) => String(s ?? "").replace(/[<>&]/g, (c) =>
+      ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]);
+
+    // The before/after: the event's mandatory deliverable, as an artifact.
+    const product = from("product");
+    if (product) {
+      document.getElementById("before").textContent = product.before;
+      document.getElementById("after").textContent = product.after;
+      document.getElementById("conf").textContent =
+        `confidence ${Number(product.before_confidence).toFixed(2)}`;
+      document.getElementById("evidence").innerHTML = (product.evidence ?? [])
+        .map((e) => `<p class="quote">${esc(e)}</p>`).join("") ||
+        `<p class="muted">No judgement was bought for this order.</p>`;
+      document.getElementById("disclosures").textContent =
+        (product.disclosures ?? []).join(" · ");
+    } else {
+      document.getElementById("beforeafter").hidden = true;
+    }
+
+    // The outbound offer the market stage wrote from this run.
+    const offer = from("offer");
+    if (offer) {
+      document.getElementById("offer-headline").textContent = offer.headline;
+      document.getElementById("offer-proof").textContent = offer.proof;
+      document.getElementById("offer-audience").textContent = offer.audience;
+      document.getElementById("offer-channel").textContent = offer.channel;
+      document.getElementById("offer-declined").innerHTML =
+        (offer.declined_channels ?? [])
+          .map((d) => `<p class="rejected">${esc(d)}</p>`).join("");
+    } else {
+      document.getElementById("outbound").hidden = true;
+    }
+
     // Each checkpoint carries the cumulative log, so the last one is the whole run.
     const decisions = found.at(-1)?.output?.decisions ?? [];
     if (decisions.length) {
@@ -372,6 +460,9 @@
     }
   } else {
     sn.textContent = "No checkpoints published yet.";
+    // Nothing to show beats a panel full of em-dashes.
+    document.getElementById("beforeafter").hidden = true;
+    document.getElementById("outbound").hidden = true;
   }
 })();
 </script>
