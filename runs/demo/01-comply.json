@@ -17,14 +17,15 @@
         "stage": "intake"
       },
       {
-        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "because": "the question asks what people think rather than for advice a licensed professional must give; sold under broker-terms-2026-08-17; 8 disclosures travel with the deliverable, including the notices for unspecified; personal data removed: none found",
         "chose": "clear \u2014 opinion research, with disclosures attached",
         "cost_usd": "0.00",
         "kind": "screen_order",
         "question": "may the company sell an answer to this?",
         "rejected": [
           "refuse the order",
-          "clear it with no disclosures"
+          "clear it with no disclosures",
+          "treat an unstated jurisdiction as the loosest case, not the strictest"
         ],
         "reversible": true,
         "stage": "comply"
@@ -37,12 +38,20 @@
       "disclosures": [
         "Produced by an autonomous agent. No human at Broker reviewed this answer.",
         "Opinion research, not legal, medical or financial advice.",
-        "Includes judgement purchased from identity-verified people via Terac, who were paid for it."
+        "Includes judgement purchased from identity-verified people via Terac, who were paid for it.",
+        "GDPR: your order text is processed only to fulfil the order, and is published in the public order thread. To request erasure, reply in that thread. Broker is not established in the EU and has no representative there.",
+        "UK GDPR: your order text is processed only to fulfil the order, and is published in the public order thread. To request erasure, reply in that thread.",
+        "Your order text is published in the public order thread and is not sold or shared with anyone but the panel that answers it.",
+        "CCPA: no personal information is sold or shared. Your order text is published in the public order thread; to request deletion, reply there.",
+        "Sold under broker-terms-2026-08-17 and broker-privacy-2026-08-17, both published at /legal.html."
       ],
+      "jurisdiction": "unspecified",
+      "privacy_id": "broker-privacy-2026-08-17",
       "redactions": [],
       "refused_because": "",
       "refused_rule": "",
-      "safe_question": "Which headline is more compelling: 'Ship faster with AI' or 'Your on-call engineer that never sleeps'?"
+      "safe_question": "Which headline is more compelling: 'Ship faster with AI' or 'Your on-call engineer that never sleeps'?",
+      "terms_id": "broker-terms-2026-08-17"
     },
     "stage": "comply"
   },

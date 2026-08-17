@@ -53,13 +53,8 @@ jobs:
       # workflow, so the ledger publishes the site itself rather than relying
       # on pages.yml noticing the commit.
       - name: Assemble site
-        run: |
-          mkdir -p _site
-          cp -r web/. _site/
-          mkdir -p _site/runs
-          cp -r runs/. _site/runs/ 2>/dev/null || true
-          touch _site/.nojekyll
-          test -f _site/index.html
+        # One assembly path for all three publishing workflows.
+        run: python3 scripts/build_site.py --out _site --run-id demo
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

@@ -16,14 +16,15 @@
         "stage": "intake"
       },
       {
-        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "because": "the question asks what people think rather than for advice a licensed professional must give; sold under broker-terms-2026-08-17; 8 disclosures travel with the deliverable, including the notices for unspecified; personal data removed: none found",
         "chose": "clear \u2014 opinion research, with disclosures attached",
         "cost_usd": "0.00",
         "kind": "screen_order",
         "question": "may the company sell an answer to this?",
         "rejected": [
           "refuse the order",
-          "clear it with no disclosures"
+          "clear it with no disclosures",
+          "treat an unstated jurisdiction as the loosest case, not the strictest"
         ],
         "reversible": true,
         "stage": "comply"

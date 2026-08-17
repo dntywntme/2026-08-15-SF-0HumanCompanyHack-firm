@@ -23,6 +23,7 @@
       "budget_usd": "1.00",
       "client_id": "client-agent",
       "id": "wo-1",
+      "jurisdiction": "unspecified",
       "question": "Which headline is more compelling: 'Ship faster with AI' or 'Your on-call engineer that never sleeps'?"
     },
     "stage": "intake"

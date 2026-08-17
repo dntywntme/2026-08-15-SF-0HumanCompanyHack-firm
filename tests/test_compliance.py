@@ -4,7 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from company.compliance import BASE_DISCLOSURES, redact, screen
+from company.compliance import (
+    BASE_DISCLOSURES,
+    PRIVACY_ID,
+    TERMS_ID,
+    obligations,
+    redact,
+    screen,
+)
 
 DEMO_QUESTION = (
     "Which headline is more compelling: 'Ship faster with AI' or "
@@ -69,3 +76,44 @@ def test_the_sourcing_disclosure_follows_the_sourcing():
 def test_screening_is_deterministic():
     # It lands in a checkpoint that --replay must reproduce byte for byte.
     assert screen(DEMO_QUESTION).payload() == screen(DEMO_QUESTION).payload()
+
+
+# ── Where the customer is ─────────────────────────────────────────────────────
+
+
+def test_every_deliverable_names_the_terms_it_was_sold_under():
+    s = screen(DEMO_QUESTION)
+    assert s.terms_id == TERMS_ID and s.privacy_id == PRIVACY_ID
+    assert any(TERMS_ID in d for d in s.disclosures)
+
+
+def test_a_stated_jurisdiction_gets_its_own_notices():
+    eu = screen(DEMO_QUESTION, jurisdiction="eu")
+    assert eu.jurisdiction == "eu"
+    assert any("GDPR" in d for d in eu.disclosures)
+    assert not any("CCPA" in d for d in eu.disclosures)
+
+
+def test_an_unstated_jurisdiction_gets_the_strictest_set():
+    # Not knowing where a customer is, is not a reason to give them fewer
+    # rights. The union is the safe default, not the empty set.
+    unknown = screen(DEMO_QUESTION).disclosures
+    assert any("GDPR" in d for d in unknown)
+    assert any("CCPA" in d for d in unknown)
+
+
+def test_an_unrecognised_jurisdiction_degrades_to_the_strictest_set():
+    assert screen(DEMO_QUESTION, jurisdiction="zz").disclosures == screen(DEMO_QUESTION).disclosures
+
+
+def test_nobody_is_refused_for_where_they_live():
+    # Refusing a customer for their address is a decision this company has no
+    # basis to make; jurisdiction only adds notices.
+    for where in ("eu", "uk", "us", "us-ca", "unspecified", "zz"):
+        assert screen(DEMO_QUESTION, jurisdiction=where).cleared
+
+
+def test_obligations_are_ordered_and_deduplicated():
+    # They land in a checkpoint, so set iteration order would break replay.
+    assert obligations("zz") == obligations("zz")
+    assert len(obligations("zz")) == len(set(obligations("zz")))

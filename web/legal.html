@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broker — terms and privacy</title>
+<meta name="description" content="The terms Broker sells under and the privacy notice its deliverables reference by id. Written by the operators, not reviewed by counsel, and it says so.">
+<!-- Inline so the browser's automatic /favicon.ico request never 404s in the console. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23111'/%3E%3Ctext x='8' y='12' font-family='monospace' font-size='11' font-weight='bold' fill='%23fff' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/linear.css">
+<link rel="stylesheet" href="assets/a11y.css">
+<style>
+  .app-main { max-width: 1120px; margin-inline: auto; padding-inline: 24px; }
+  .app-header .brand { padding-inline: 24px; }
+  .app-sub, .prose { max-width: 68ch; }
+  .app-title { font-size: clamp(2rem, 3.4vw + 1rem, 2.9rem); line-height: 1.1; }
+  .muted { color: var(--text-muted); }
+  .mono { font-family: var(--font-mono); font-size: .85rem; }
+  .hl { border: 1px solid var(--border); border-radius: var(--radius-md);
+        padding: 1rem; background: var(--surface-lift); }
+  .hl h3 { margin: 0 0 .35rem; font-size: 1.05rem; }
+  dl.pnl { display: grid; gap: .25rem; grid-template-columns: 1fr auto; align-items: baseline; }
+  dl.pnl dt { color: var(--text-muted); }
+  dl.pnl dd { margin: 0; font-family: var(--font-mono); text-align: right; }
+</style>
+</head>
+<body>
+
+<header class="app-header"><div class="brand"><strong>Broker</strong></div></header>
+
+<main class="app-main">
+
+  <p class="eyebrow">Referenced by id on every deliverable</p>
+  <h1 class="app-title">Terms and privacy</h1>
+
+  <section class="chart-card">
+    <div class="hl">
+      <h3>Read this first</h3>
+      <p class="prose">
+        Broker is <strong>not an incorporated entity</strong>. There is no company
+        to sue, no registered agent, and no insurance behind anything below. These
+        documents were written by the people who built the software and
+        <strong>were not reviewed by a lawyer</strong>. They are published because a
+        company that attaches disclosures to its answers should be able to show you
+        what it is disclosing — not because they are a substitute for counsel.
+      </p>
+      <p class="prose muted">
+        If that makes you unwilling to send an order, that is the correct
+        response, and it is why this page says so at the top rather than in a
+        footnote.
+      </p>
+    </div>
+    <dl class="pnl">
+      <dt>Terms id</dt>     <dd id="terms-id">broker-terms-2026-08-17</dd>
+      <dt>Privacy id</dt>   <dd id="privacy-id">broker-privacy-2026-08-17</dd>
+      <dt>Operator</dt>     <dd>an unincorporated project</dd>
+      <dt>Contact</dt>      <dd>reply in your order thread</dd>
+    </dl>
+    <p class="mono muted">
+      Every deliverable carries the ids above, so you can always say which
+      version you were sold under. They change only when this page does.
+    </p>
+  </section>
+
+  <section class="chart-card">
+    <h2 class="chart-title">Terms</h2>
+
+    <h3>What you are buying</h3>
+    <p class="prose">
+      An opinion. Broker answers a question either from its own model or, when it
+      judges that it does not know, by paying identity-verified people through
+      Terac for their judgement and selling you what they said. Which of those
+      happened is stated on every answer, along with the agent's own draft, so you
+      can see what the purchased judgement changed.
+    </p>
+
+    <h3>What you are not buying</h3>
+    <p class="prose">
+      Legal, medical or financial advice. Broker refuses those orders at intake
+      rather than answering them with a disclaimer — an unlicensed opinion on a
+      regulated question is worth less than nothing to both of us. The refusal is
+      published in your order thread with the rule that fired.
+    </p>
+
+    <h3>No human at our end</h3>
+    <p class="prose">
+      Every decision about your order — whether to accept it, whether to buy
+      judgement for it, what to charge, whether to release it — is made by
+      software with no person reviewing it. The people involved are the panel who
+      answer the question and are paid for it. If you want a human to have checked
+      the answer before you got it, this is the wrong supplier.
+    </p>
+
+    <h3>Price and payment</h3>
+    <p class="prose">
+      The price is set from what the answer cost to produce and is capped at
+      $1.00 for this event. Payment runs through Stripe <strong>in a sandbox</strong>:
+      the charge is a test-mode object and no card is debited. Nothing here has
+      taken real money from a customer.
+    </p>
+
+    <h3>Refunds and disputes</h3>
+    <p class="prose">
+      There is no dispute process. This is a gap, not a policy — it is named in
+      <a href="https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm/blob/main/docs/REQUIREMENTS.md">the requirements document</a>
+      as one of the things that would have to exist before this could trade with
+      anyone it has not met. Until it does, treat every order as unrefundable and
+      priced accordingly.
+    </p>
+
+    <h3>Availability</h3>
+    <p class="prose">
+      None. Orders are answered when the automation runs. There is no uptime
+      commitment and no support channel other than the public thread your order
+      lives in.
+    </p>
+  </section>
+
+  <section class="chart-card">
+    <h2 class="chart-title">Privacy</h2>
+
+    <h3>What we collect</h3>
+    <p class="prose">
+      The text of your order, and nothing else. There is no account, no cookie, no
+      analytics, and no tracker on any page of this site. The dashboard holds no
+      credentials by construction — it renders committed JSON files.
+    </p>
+
+    <h3>Where it goes</h3>
+    <p class="prose">
+      Your order is a public GitHub Issue. It is world-readable the moment you
+      open it, it is forwarded to the panel that answers it, and the answer is
+      published in the same thread. <strong>Assume everything you send is
+      permanently public</strong>, because it is.
+    </p>
+
+    <h3>What never travels</h3>
+    <p class="prose">
+      Email addresses, phone numbers, card-shaped numbers and government id
+      numbers are stripped out of order text at the compliance gate before the
+      order goes anywhere — to a panel, to a checkpoint, or onto this site. The
+      removal is recorded on the order so you can see what was taken out. This is
+      a safety net, not a licence: do not put personal data in an order.
+    </p>
+
+    <h3>Payment data</h3>
+    <p class="prose">
+      Broker never sees a card. The buyer's own agent holds the payment
+      credential; Broker holds a read-only key and can observe only that a charge
+      arrived. What reaches this site is an aggregate — amount, status, whether it
+      was live mode — with no customer identifier attached.
+    </p>
+
+    <h3>Retention</h3>
+    <p class="prose">
+      Indefinite, because the record is a public git history and a public issue
+      thread. There is no deletion job. Erasure requests can be made by replying
+      in your order thread; they will be handled by a person, which is the one
+      part of this company that is not automated.
+    </p>
+
+    <h3>Where you are</h3>
+    <p class="prose">
+      An order may state a jurisdiction, and the notices attached to the answer
+      follow it. If it does not, the strictest set we implement is applied
+      instead — not knowing where a customer is, is not a reason to give them
+      fewer rights.
+    </p>
+  </section>
+
+  <p class="muted"><a href="./">Back to the dashboard</a></p>
+
+</main>
+
+</body>
+</html>

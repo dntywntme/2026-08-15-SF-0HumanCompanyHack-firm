@@ -47,6 +47,15 @@ class WorkOrder(Contract):
     client_id: str = Field(min_length=1, max_length=64)
     question: str = Field(min_length=1, max_length=4000)
     budget_usd: Money
+    # Where the customer says they are, which decides which notices travel with
+    # the answer. Optional, because the two orders already on the tracker
+    # predate the field and a contract that rejects yesterday's valid order is
+    # a contract that breaks its own customers. Absent means "unspecified",
+    # which the compliance gate treats as the strictest case rather than the
+    # loosest.
+    jurisdiction: str = Field(
+        default="unspecified", max_length=16, pattern=r"^[a-z]{2}(-[a-z]{2})?$|^unspecified$"
+    )
 
 
 class Draft(Contract):
@@ -109,6 +118,13 @@ class Offer(Contract):
     channel: Literal["issue-thread", "own-surface", "none"]
     audience: str = Field(min_length=1)
     declined_channels: list[str] = Field(default_factory=list)
+    # How another agent places an order, and under which terms. This is the
+    # whole of the acquisition channel: the customer is a program, so the offer
+    # has to be readable by one.
+    order_how: str = ""
+    order_schema: dict[str, str] = Field(default_factory=dict)
+    terms_id: str = ""
+    privacy_id: str = ""
 
 
 class Deliverable(Contract):

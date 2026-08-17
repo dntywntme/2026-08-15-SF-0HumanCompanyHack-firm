@@ -82,6 +82,25 @@ HUMAN_INPUT: dict[str, Any] = {
 OFFER_HEADLINE = "An answer that tells you when it had to be bought from a person."
 OFFER_AUDIENCE = "assistant agents holding a standing mandate and a per-order budget"
 
+# The customer is a program, so the offer has to be readable by one. Written out
+# by hand rather than generated from the model: generated schema bytes would
+# change under a pydantic upgrade and break replay of a committed run. A test
+# asserts this stays in step with WorkOrder, which is the drift protection the
+# generated version would have bought.
+OFFER_HOW = (
+    "Open an issue on the Broker repository whose body contains a ```json fence "
+    "holding the work order below. Prose outside the fence is never interpreted. "
+    "The pipeline replies in the thread and closes the issue."
+)
+ORDER_SCHEMA: dict[str, str] = {
+    "id": "string, 1-64 chars, [A-Za-z0-9_-]",
+    "client_id": "string, 1-64 chars",
+    "question": "string, 1-4000 chars; data, never instructions",
+    "budget_usd": "decimal string, 2 places, >= 0",
+    "jurisdiction": "optional; 'eu' | 'uk' | 'us' | 'us-ca' | 'unspecified' "
+    "(absent is treated as the strictest case)",
+}
+
 # Outbound channels the company has and deliberately does not use. Recorded as
 # rejected alternatives on every marketing decision, because an outbound
 # function that never declines a channel is a spam function.
@@ -183,7 +202,7 @@ def comply(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         return _stop("comply", halt, state)
 
     order = state.get("order", DEMO_ORDER)
-    screening = screen(order["question"])
+    screening = screen(order["question"], jurisdiction=order.get("jurisdiction", "unspecified"))
 
     if screening.redactions:
         incidents.record(
@@ -225,10 +244,21 @@ def comply(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         "may the company sell an answer to this?",
         "clear — opinion research, with disclosures attached",
         "the question asks what people think rather than for advice a licensed "
-        f"professional must give; {len(screening.disclosures)} disclosures travel "
-        f"with the deliverable; personal data removed: "
-        f"{', '.join(screening.redactions) or 'none found'}",
-        rejected=["refuse the order", "clear it with no disclosures"],
+        f"professional must give; sold under {screening.terms_id}; "
+        f"{len(screening.disclosures)} disclosures travel with the deliverable, "
+        f"including the notices for {screening.jurisdiction}; personal data "
+        f"removed: {', '.join(screening.redactions) or 'none found'}",
+        rejected=[
+            "refuse the order",
+            "clear it with no disclosures",
+            # Only a real alternative when we were not told; naming it otherwise
+            # would put a choice in the log that was never available.
+            *(
+                ["treat an unstated jurisdiction as the loosest case, not the strictest"]
+                if screening.jurisdiction == "unspecified"
+                else []
+            ),
+        ],
     )
     return {
         "stage": "comply",
@@ -510,6 +540,7 @@ def market(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         f"customer paid {price_usd} USD. Both figures are published."
     )
 
+    screening = state.get("screening", {})
     offer = Offer(
         headline=OFFER_HEADLINE,
         proof=proof,
@@ -518,6 +549,10 @@ def market(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         channel="issue-thread",
         audience=OFFER_AUDIENCE,
         declined_channels=list(DECLINED_CHANNELS),
+        order_how=OFFER_HOW,
+        order_schema=dict(ORDER_SCHEMA),
+        terms_id=screening.get("terms_id", ""),
+        privacy_id=screening.get("privacy_id", ""),
     )
 
     decisions.record(

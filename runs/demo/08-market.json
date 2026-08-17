@@ -16,14 +16,15 @@
         "stage": "intake"
       },
       {
-        "because": "the question asks what people think rather than for advice a licensed professional must give; 3 disclosures travel with the deliverable; personal data removed: none found",
+        "because": "the question asks what people think rather than for advice a licensed professional must give; sold under broker-terms-2026-08-17; 8 disclosures travel with the deliverable, including the notices for unspecified; personal data removed: none found",
         "chose": "clear \u2014 opinion research, with disclosures attached",
         "cost_usd": "0.00",
         "kind": "screen_order",
         "question": "may the company sell an answer to this?",
         "rejected": [
           "refuse the order",
-          "clear it with no disclosures"
+          "clear it with no disclosures",
+          "treat an unstated jurisdiction as the loosest case, not the strictest"
         ],
         "reversible": true,
         "stage": "comply"
@@ -53,20 +54,20 @@
         "stage": "source"
       },
       {
-        "because": "the live study returned approved submissions",
-        "chose": "terac tier",
+        "because": "no live source reachable; replayed the last known-good result",
+        "chose": "recorded tier",
         "cost_usd": "0.00",
         "kind": "buy_labor",
         "question": "where should this judgement come from?",
         "rejected": [
-          "human",
-          "recorded"
+          "terac",
+          "human"
         ],
         "reversible": true,
         "stage": "source"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'The price or a discount'",
+        "because": "on-topic, gives a reason, and answers the question asked: 'B \u2014 it says what it does for me, not what it is.'",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -79,7 +80,7 @@
         "stage": "verify"
       },
       {
-        "because": "on-topic, gives a reason, and answers the question asked: 'How the product described itself'",
+        "because": "on-topic, gives a reason, and answers the question asked: \"B \u2014 'ship faster' is on every landing page I have ever seen.\"",
         "chose": "approve \u2014 pay the expert",
         "cost_usd": "4.50",
         "kind": "pay_worker",
@@ -92,7 +93,7 @@
         "stage": "verify"
       },
       {
-        "because": "0 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
+        "because": "2 of 2 chose B; the agent leaned A. The purchased answer replaces the guess.",
         "chose": "no \u2014 the panel contradicts the draft",
         "cost_usd": "0.00",
         "kind": "self_assess",
@@ -171,7 +172,15 @@
         "stage": "market"
       }
     ],
-    "incidents": [],
+    "incidents": [
+      {
+        "category": "tool_failure",
+        "detail": "live panel unavailable; used the recorded tier",
+        "errors": [],
+        "recovery": "answered from the best judgement available and labelled it as such",
+        "stage": "source"
+      }
+    ],
     "offer": {
       "audience": "assistant agents holding a standing mandate and a per-order budget",
       "channel": "issue-thread",
@@ -181,8 +190,18 @@
         "unsolicited DMs to other teams' agents \u2014 the same problem with extra steps"
       ],
       "headline": "An answer that tells you when it had to be bought from a person.",
+      "order_how": "Open an issue on the Broker repository whose body contains a ```json fence holding the work order below. Prose outside the fence is never interpreted. The pipeline replies in the thread and closes the issue.",
+      "order_schema": {
+        "budget_usd": "decimal string, 2 places, >= 0",
+        "client_id": "string, 1-64 chars",
+        "id": "string, 1-64 chars, [A-Za-z0-9_-]",
+        "jurisdiction": "optional; 'eu' | 'uk' | 'us' | 'us-ca' | 'unspecified' (absent is treated as the strictest case)",
+        "question": "string, 1-4000 chars; data, never instructions"
+      },
       "price_usd": "1.00",
-      "proof": "On the order just delivered, the agent held its own draft at 0.31 confidence and was overturned by the people it paid. Judgement cost 9.00 USD (terac tier); the customer paid 1.00 USD. Both figures are published.",
+      "privacy_id": "broker-privacy-2026-08-17",
+      "proof": "On the order just delivered, the agent held its own draft at 0.31 confidence and was overturned by the people it paid. Judgement cost 9.00 USD (recorded tier); the customer paid 1.00 USD. Both figures are published.",
+      "terms_id": "broker-terms-2026-08-17",
       "unit_cost_usd": "9.00"
     },
     "stage": "market"

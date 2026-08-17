@@ -29,6 +29,13 @@
   .quote { border-left: 2px solid var(--border); padding-left: .9rem; margin: .6rem 0;
            color: var(--text-muted); }
   .quote.shipped { border-left-color: var(--primary); color: var(--text); }
+  /* Money flow: revenue against cost of goods, to scale. The bar is decorative
+     — every figure in it is also printed as text underneath — so it is
+     aria-hidden rather than given a role a screen reader would have to narrate. */
+  .flowbar { display: flex; height: .6rem; border-radius: 999px; overflow: hidden;
+             background: var(--border); margin: .8rem 0 .3rem; }
+  .flowbar-in  { background: var(--success); }
+  .flowbar-out { background: var(--danger); }
   .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
   .mono { font-family: var(--font-mono); font-size: .85rem; }
   [hidden] { display: none !important; }
@@ -138,6 +145,8 @@
       <dd>another agent, in <a href="https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/">its own repository</a>, with no human at that end either</dd>
       <dt>Check it yourself</dt>
       <dd><code>make replay</code> re-emits this run offline, with no keys and no network</dd>
+      <dt>What you agree to</dt>
+      <dd><a href="legal.html">terms and privacy</a> &mdash; cited by id on every answer</dd>
     </dl>
   </section>
 
@@ -158,6 +167,13 @@
         every demo sale runs at a planned loss. The company is not broken; it is
         selling below cost in public so the cost is visible.
       </p>
+      <!-- One proportional bar. The negative margin should read instantly,
+           without needing the paragraph above it. -->
+      <div class="flowbar" aria-hidden="true">
+        <span class="flowbar-in"  id="bar-in"></span>
+        <span class="flowbar-out" id="bar-out"></span>
+      </div>
+      <p class="mono muted" id="flow-label">IN &mdash; &middot; OUT &mdash;</p>
       <p class="mono muted" id="ledger-note">loading&hellip;</p>
     </section>
 
@@ -361,6 +377,15 @@
     const m = document.getElementById("margin");
     m.textContent = money(rev - cogs);
     m.className = "big " + (rev - cogs < 0 ? "neg" : "pos");
+    // Proportional, so a $4 revenue against $18 of cost of goods looks like
+    // what it is. Guarded against a zero total, which would collapse both.
+    const total = Math.abs(rev) + Math.abs(cogs);
+    const pct = (n) => (total > 0 ? (Math.abs(n) / total) * 100 : 50);
+    document.getElementById("bar-in").style.width = `${pct(rev)}%`;
+    document.getElementById("bar-out").style.width = `${pct(cogs)}%`;
+    document.getElementById("flow-label").textContent =
+      `IN ${money(rev)} · OUT ${money(cogs)} — every dollar in costs ${
+        rev > 0 ? (cogs / rev).toFixed(2) : "—"} to serve`;
     note.textContent = ledger.source === "stripe"
       ? `${ledger.transactions} settled · ${ledger.failed} failed · ${ledger.refunded} refunded · from Stripe (sandbox)`
       : "Stripe unreachable — showing last known state.";

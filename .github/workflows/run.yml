@@ -80,13 +80,10 @@ jobs:
       # A push made with the default GITHUB_TOKEN does not trigger another
       # workflow, so this publishes the site itself.
       - name: Assemble site
+        # One assembly path for all three publishing workflows.
         run: |
-          mkdir -p _site
-          cp -r web/. _site/
-          mkdir -p _site/runs
-          cp -r runs/. _site/runs/ 2>/dev/null || true
-          touch _site/.nojekyll
-          test -f _site/index.html
+          python3 scripts/build_site.py \
+            --out _site --run-id "${{ inputs.run_id || 'demo' }}"
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

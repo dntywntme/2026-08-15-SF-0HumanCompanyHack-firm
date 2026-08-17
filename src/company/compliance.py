@@ -82,6 +82,67 @@ PERSONAL_DATA: list[tuple[str, re.Pattern[str]]] = [
 
 REDACTION = "[redacted]"
 
+# ── What the customer agreed to ───────────────────────────────────────────────
+# The terms and the privacy notice are published at web/legal.html and referenced
+# by id on every deliverable, so a customer can say which version they were sold
+# under and we cannot quietly change what they agreed to.
+#
+# Bumped by hand when web/legal.html changes. Deliberately not derived from a
+# file hash or a clock: it lands in a checkpoint that --replay must reproduce
+# byte for byte, and a version that moves on its own would break that.
+POLICY_VERSION = "2026-08-17"
+TERMS_ID = f"broker-terms-{POLICY_VERSION}"
+PRIVACY_ID = f"broker-privacy-{POLICY_VERSION}"
+
+# ── Where the customer is ─────────────────────────────────────────────────────
+# Notices we publish per jurisdiction. These are disclosure obligations a static
+# page can actually satisfy. They are NOT a compliance programme, nothing here
+# was reviewed by counsel, and Broker is not an incorporated entity in any of
+# these places -- which is itself disclosed.
+UNSPECIFIED = "unspecified"
+JURISDICTION_NOTICES: dict[str, list[str]] = {
+    "eu": [
+        "GDPR: your order text is processed only to fulfil the order, and is "
+        "published in the public order thread. To request erasure, reply in that "
+        "thread. Broker is not established in the EU and has no representative "
+        "there.",
+    ],
+    "uk": [
+        "UK GDPR: your order text is processed only to fulfil the order, and is "
+        "published in the public order thread. To request erasure, reply in that "
+        "thread.",
+    ],
+    "us-ca": [
+        "CCPA: no personal information is sold or shared. Your order text is "
+        "published in the public order thread; to request deletion, reply there.",
+    ],
+    "us": [
+        "Your order text is published in the public order thread and is not sold "
+        "or shared with anyone but the panel that answers it.",
+    ],
+}
+
+
+def obligations(jurisdiction: str) -> list[str]:
+    """The notices this jurisdiction requires, in a stable order.
+
+    An unknown or unstated jurisdiction gets the union of everything we
+    implement. Not knowing where a customer is, is not a reason to give them
+    fewer rights -- it is a reason to assume the strictest set we can satisfy.
+    """
+    key = (jurisdiction or UNSPECIFIED).strip().lower()
+    if key in JURISDICTION_NOTICES:
+        return list(JURISDICTION_NOTICES[key])
+    seen: set[str] = set()
+    union: list[str] = []
+    for name in sorted(JURISDICTION_NOTICES):
+        for notice in JURISDICTION_NOTICES[name]:
+            if notice not in seen:
+                seen.add(notice)
+                union.append(notice)
+    return union
+
+
 # Attached to every deliverable the company releases. The first one is the
 # whole premise of the event and is never conditional.
 BASE_DISCLOSURES = [
@@ -113,6 +174,11 @@ class Screening(Contract):
     # The text that is safe to forward to a panel and to publish.
     safe_question: str
     disclosures: list[str] = Field(default_factory=list)
+    # Which version of the published terms this order was sold under, and where
+    # the customer said they are. Both travel on the deliverable.
+    jurisdiction: str = UNSPECIFIED
+    terms_id: str = TERMS_ID
+    privacy_id: str = PRIVACY_ID
 
 
 def redact(question: str) -> tuple[str, list[str]]:
@@ -126,30 +192,33 @@ def redact(question: str) -> tuple[str, list[str]]:
     return safe, found
 
 
-def screen(question: str, *, escalating: bool = True) -> Screening:
+def screen(question: str, *, escalating: bool = True, jurisdiction: str = UNSPECIFIED) -> Screening:
     """Decide whether this order may be worked at all, and on what terms.
 
     ``escalating`` only selects which sourcing disclosure applies; it does not
-    affect whether the order clears. Checks run refusal-first, so a refused
-    order is never redacted-and-forwarded by accident.
+    affect whether the order clears. ``jurisdiction`` only adds notices --
+    nothing is refused for being somewhere in particular, because refusing a
+    customer for their address is a decision this company has no basis to make.
+    Checks run refusal-first, so a refused order is never
+    redacted-and-forwarded by accident.
     """
-    disclosures = [*BASE_DISCLOSURES, HUMAN_DISCLOSURE if escalating else AGENT_ONLY_DISCLOSURE]
+    jurisdiction = (jurisdiction or UNSPECIFIED).strip().lower()
+    disclosures = [
+        *BASE_DISCLOSURES,
+        HUMAN_DISCLOSURE if escalating else AGENT_ONLY_DISCLOSURE,
+        *obligations(jurisdiction),
+        f"Sold under {TERMS_ID} and {PRIVACY_ID}, both published at /legal.html.",
+    ]
     safe, redactions = redact(question)
+    common = {
+        "redactions": redactions,
+        "safe_question": safe,
+        "disclosures": disclosures,
+        "jurisdiction": jurisdiction,
+    }
 
     for name, pattern, why in RESTRICTED:
         if pattern.search(question):
-            return Screening(
-                cleared=False,
-                refused_rule=name,
-                refused_because=why,
-                redactions=redactions,
-                safe_question=safe,
-                disclosures=disclosures,
-            )
+            return Screening(cleared=False, refused_rule=name, refused_because=why, **common)
 
-    return Screening(
-        cleared=True,
-        redactions=redactions,
-        safe_question=safe,
-        disclosures=disclosures,
-    )
+    return Screening(cleared=True, **common)
