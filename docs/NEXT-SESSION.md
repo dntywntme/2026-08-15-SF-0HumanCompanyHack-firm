@@ -60,11 +60,19 @@ Struck from the previous handoff, with where it went:
 
 ## Still open, in order
 
-1. **`CLIENT_GITHUB_TOKEN` is the one missing secret.** It lets the client agent
-   open work orders. Scope it to **Issues: write on the Broker repo only** — that
-   scope *is* the trust boundary. `TERAC_API_KEY`, `STRIPE_RESTRICTED_KEY` and
-   `CLIENT_STRIPE_KEY` are all set and working: a manual `run` on 2026-08-17
-   returned `tier=terac`, which is the proof the Terac key is live.
+1. **No secrets are missing.** All five are set, confirmed against
+   `gh secret list` on 2026-08-17: `TERAC_API_KEY`, `STRIPE_RESTRICTED_KEY` and
+   `PIONEER_API_KEY` on Broker, `CLIENT_GITHUB_TOKEN` and `CLIENT_STRIPE_KEY` on
+   the client. A manual `run` the same day returned `tier=terac`, which is the
+   proof the Terac key is live rather than merely present.
+
+   What that unlocks, and nobody has exercised end to end since: the client can
+   place a work order **as itself**. Every order on the tracker so far was opened
+   by hand. `uv run client --question "..."` from the client repo, or the `pay`
+   workflow in `judge` mode, closes the loop with no human touching either end —
+   and that is the demo, not a chore. Check the token's scope is still **Issues:
+   write on the Broker repo only** before running it; that scope *is* the trust
+   boundary, and widening it quietly deletes the claim.
 2. **The golden run in a fresh clone is on the `recorded` tier**, because a
    clone has no key. The scheduled `run` workflow republishes it on the `terac`
    tier within the hour, so what a judge opens is the live tier. Both are
