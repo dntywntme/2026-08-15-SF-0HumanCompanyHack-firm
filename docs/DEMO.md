@@ -33,19 +33,32 @@ make run               # writes runs/<run_id>/*.json as it goes
 make run RUN_ID=judge  # a clean run id for the live demo
 ```
 
-## The four panels
+## The panels
 
 The UI renders from `runs/<run_id>/*.json`, so it works identically in live and
-replay mode.
+replay mode. Nothing on the page is typed by hand.
 
-1. **P&L** — revenue in (Stripe), cost of goods out (Terac), margin. The company
-   having unit economics is the thing no one else will show.
-2. **Terac before/after** — AI-only answer beside the human-verified answer, with
-   the price paid. This is a mandatory rubric item; it is a panel, not a slide.
-3. **Stage timeline** — each stage with turn spend, wall-clock, checkpoint status.
-4. **Incidents** — errors caught and what the company did about them. Schema
-   violations, turn-cap aborts, timeouts, and any artifact blocked at the trust
-   boundary.
+1. **P&L** — revenue in (Stripe), cost of goods out (Terac), margin, and one
+   proportional bar so the loss reads instantly. The company having unit
+   economics is the thing no one else will show.
+2. **What the human input changed** — the agent's own draft beside the answer
+   that shipped after it paid people, with the panel's words underneath. This is
+   the mandatory rubric item, and it is a field on the artifact rather than a
+   slide: `product.changed` is allowed to be `false`, so it can report that the
+   money bought confirmation rather than a correction.
+3. **Decisions** — all thirteen, each with what it rejected and what it cost.
+   Irreversible ones are the money: two `pay_worker` approvals at $4.50 and the
+   $9.00 spend that authorised them.
+4. **Run** — the nine stages, read from the run manifest rather than guessed.
+5. **Outbound** — the offer the `market` stage wrote from this run, and the
+   channels it declined. Also published at `/offer.json` for the agent that buys.
+6. **Incidents** — errors caught and what the company did about them. Schema
+   violations, turn-cap aborts, timeouts, compliance refusals, and any artifact
+   blocked at the trust boundary.
+
+Two more surfaces worth opening if a judge asks what the customer agreed to:
+`/legal.html` (terms and privacy, cited by id on every deliverable) and
+`/offer.json` (price, wire schema, terms id — machine-readable).
 
 ## Two-minute video beat sheet
 
@@ -67,10 +80,17 @@ the replay-driven capture is indistinguishable to a viewer and always works.
 
 | Induce | Expected behaviour |
 |---|---|
-| Kill the network mid-run | tools return degraded values; the run completes; incidents panel shows the degradation |
+| Kill the network mid-run | tools return degraded values; the run completes; incidents panel shows which tier answered |
 | Force a malformed model response | `ValidationError` caught, retried with the error fed back, visible on the incidents panel |
-| Set `--max-turns` below the pipeline's cost | run aborts before the offending stage; no partial checkpoint |
+| `--max-turns 8` (a clean run costs 11) | run aborts before the offending stage; no partial checkpoint |
 | Point a stage at a hanging endpoint | wall-clock timeout fires; harness returns promptly; stage marked degraded |
+| Order something we may not sell — *"Is a 2-year non-compete enforceable in California?"* | `comply` refuses at the gate, the run **halts**, every later stage records that it did nothing, and **nothing is spent**. The best drill of the set: it shows a control firing rather than an error being caught |
+| Set `REQUIRE_PAYMENT_BEFORE_COGS=false` and order with a $0.01 budget | the COGS-drain attack lands; flip it back on camera to watch the spend guard refuse |
+
+The compliance drill is worth rehearsing over the others. Every row above it
+shows the company surviving something going wrong; that one shows it declining
+business it could have taken, which is the harder thing to demonstrate and the
+easier thing to doubt.
 
 ## Known limitation to disclose if asked
 

@@ -8,11 +8,14 @@ Repositories:
 - **Broker** — [`dntywntme/2026-08-15-SF-0HumanCompanyHack-firm`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-firm) (this one)
 - **client** — [`dntywntme/2026-08-15-SF-0HumanCompanyHack-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client)
 
-Live surfaces:
+Live surfaces — all static, none holds a credential:
 
 - [Dashboard](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/)
 - [Ledger, as JSON](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json)
+- [The offer, machine-readable](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/offer.json) — derived from the last run's `market` checkpoint
+- [Terms and privacy](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html) — cited by id on every deliverable
 - [Participant task view](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/?submissionId=demo&taskId=t1)
+- [The client's surface](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-client/) — the counterparty's own record
 
 ## 1. Architecture
 
@@ -47,8 +50,10 @@ Live surfaces:
  │  src/company/adapters/pioneer.py   confidence on an open-weight model     │
  │  src/company/adapters/terac.py     three sourcing tiers, each labelled    │
  │  scripts/poll_ledger.py     rk_ read-only · publishes aggregates only     │
+ │  scripts/build_site.py      one assembly path · derives /offer.json       │
  │  web/index.html             storefront · task view · P&L · before/after · │
  │                             decisions · outbound                          │
+ │  web/legal.html             terms + privacy, cited by id on every answer  │
  └────┬──────────────┬───────────────────┬──────────────────┬────────────────┘
       │              │                   │                  │
       ▼              ▼                   ▼                  ▼
