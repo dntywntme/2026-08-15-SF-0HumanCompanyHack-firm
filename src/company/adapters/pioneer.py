@@ -20,6 +20,8 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 
+from company.adapters.http import open_https
+
 DEFAULT_BASE = "https://api.pioneer.ai/v1"
 DEFAULT_MODEL = "Qwen/Qwen3-8B"
 
@@ -93,7 +95,9 @@ def score_confidence(
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        # ``base`` comes from the environment, so the scheme is checked before
+        # the URL is opened: a redirected base must not become a file read.
+        with open_https(req, timeout) as resp:
             payload = json.load(resp)
         content = payload["choices"][0]["message"]["content"]
     except urllib.error.HTTPError as exc:

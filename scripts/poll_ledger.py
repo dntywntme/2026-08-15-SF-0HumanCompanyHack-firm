@@ -24,9 +24,29 @@ STRIPE_API = "https://api.stripe.com/v1"
 OUT = Path("runs/ledger.json")
 
 
+def _base() -> str:
+    """The Stripe API root, overridable so a test can redirect it."""
+    return os.environ.get("STRIPE_API_BASE", "").strip().rstrip("/") or STRIPE_API
+
+
+def _open_https(req: urllib.request.Request, timeout: float):
+    """Open ``req`` if and only if it is https.
+
+    Deliberately duplicated from ``company.adapters.http``: the ledger job runs
+    this file with a bare interpreter and no ``uv sync``, so it cannot import
+    the package. The rule is the same one — the base URL is environment-supplied
+    and a restricted Stripe key travels in the header, so nothing but https may
+    be opened.
+    """
+    if req.type != "https":
+        raise ValueError(f"refusing to open a {req.type!r} URL; allowed: https")
+    # Audited: the scheme is checked on the line above.
+    return urllib.request.urlopen(req, timeout=timeout)  # noqa: S310
+
+
 def _get(path: str, key: str, timeout: float = 10.0) -> dict:
-    req = urllib.request.Request(f"{STRIPE_API}{path}", headers={"Authorization": f"Bearer {key}"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    req = urllib.request.Request(f"{_base()}{path}", headers={"Authorization": f"Bearer {key}"})
+    with _open_https(req, timeout) as resp:
         return json.load(resp)
 
 

@@ -26,16 +26,24 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Literal
 
+from company.adapters.http import open_https
+
 TERAC_API = "https://terac.com/api/external/v2"
 OVERRIDE = Path("runs/human_override.json")
 
 Source = Literal["terac", "human", "recorded"]
 
 
+def _base() -> str:
+    """The API root. Overridable so a test or a staging run can redirect it."""
+    return os.environ.get("TERAC_API_BASE", "").strip().rstrip("/") or TERAC_API
+
+
 def _get(path: str, key: str, timeout: float = 15.0) -> dict[str, Any]:
     # Bearer works; x-api-key returns 401 despite the docs listing both.
-    req = urllib.request.Request(f"{TERAC_API}{path}", headers={"Authorization": f"Bearer {key}"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    req = urllib.request.Request(f"{_base()}{path}", headers={"Authorization": f"Bearer {key}"})
+    # The base is environment-supplied, so the scheme is checked before opening.
+    with open_https(req, timeout) as resp:
         return json.load(resp)
 
 
@@ -68,8 +76,13 @@ def _from_terac(opportunity_id: str, key: str) -> dict[str, Any] | None:
     }
 
 
-def _from_human(path: Path = OVERRIDE) -> dict[str, Any] | None:
-    """Tier 2. A person drops in judgement the API could not supply."""
+def _from_human(path: Path | None = None) -> dict[str, Any] | None:
+    """Tier 2. A person drops in judgement the API could not supply.
+
+    ``OVERRIDE`` is resolved on each call rather than bound as a default, so the
+    location is a module constant and not a value frozen at import time.
+    """
+    path = OVERRIDE if path is None else path
     if not path.is_file():
         return None
     try:
