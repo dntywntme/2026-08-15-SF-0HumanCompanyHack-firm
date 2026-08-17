@@ -1,6 +1,6 @@
 name: run
 
-# The company doing a full turn of work, unattended: six stages, live sourcing
+# The company doing a full turn of work, unattended: nine stages, live sourcing
 # from Terac, decisions recorded, and the result published to the dashboard.
 #
 # This is the leg that makes the pipeline autonomous rather than replayed. It
@@ -64,16 +64,10 @@ jobs:
                 f"incidents={len(last.get('incidents', []))}")
           PY
 
-      - name: Refresh the stage manifest
-        # The dashboard reads this rather than guessing filenames.
-        run: |
-          python3 - <<'PY'
-          import json, pathlib
-          d = pathlib.Path("runs/${{ inputs.run_id || 'demo' }}")
-          stages = sorted(p.stem for p in d.glob("*.json")
-                          if "timing" not in p.name and p.stem != "index")
-          (d / "index.json").write_text(json.dumps({"stages": stages}, indent=2) + "\n")
-          PY
+      # The stage manifest the dashboard reads is written by the run itself
+      # (company.harness._write_manifest), so a local `make run` and this one
+      # leave the same artifact. It used to be regenerated here, which meant a
+      # manual run published a stage list from a previous shape of the pipeline.
 
       - name: Commit the run
         run: |

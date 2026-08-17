@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from collections.abc import Callable, Sequence
@@ -23,8 +24,14 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_RUNS_DIR = Path("runs")
-DEFAULT_MAX_TURNS = 12
+# Nine stages, two of which spend a second turn on inner work, so a clean run
+# costs eleven. The cap is the runaway guard, not a target: it has to sit above
+# the honest cost of the pipeline or it fires on success.
+DEFAULT_MAX_TURNS = 16
 DEFAULT_STAGE_TIMEOUT = 30.0
+# The dashboard reads this rather than guessing checkpoint filenames: probing
+# names that do not exist fills a judge's console with 404s.
+MANIFEST_NAME = "index.json"
 
 # A stage is a pure-ish function: (ctx, state) -> dict. It must be deterministic
 # given the same inputs, otherwise replay cannot reproduce it.
@@ -96,6 +103,18 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, sort_keys=True, indent=2) + "\n", encoding="utf-8")
 
 
+def _write_manifest(runs_dir: Path, run_id: str, stems: list[str]) -> None:
+    """Record which checkpoints this run produced, for the dashboard to read.
+
+    Written by the run itself rather than by CI, so a local ``make run`` and a
+    scheduled one leave the same artifact and the published page never renders a
+    stage list from a previous shape of the pipeline.
+    """
+    if not stems:
+        return
+    _write_json(runs_dir / run_id / MANIFEST_NAME, {"stages": sorted(stems)})
+
+
 def _emit(record: dict[str, Any], out) -> None:
     """Emit one deterministic line. No timestamps, no durations -- replay must match."""
     out.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
@@ -140,37 +159,44 @@ def run_pipeline(
     ctx = RunContext(run_id=run_id, max_turns=max_turns)
     state: dict[str, Any] = dict(initial_state or {})
     result = RunResult(run_id=run_id, state=state)
+    written: list[str] = []
 
-    for index, stage in enumerate(stages):
-        ctx.stage_name = stage.name
-        started = time.monotonic()
-        try:
-            # Entering a stage always costs one turn: this is the hard cap.
-            ctx.spend_turn()
-            output = _call_with_timeout(
-                lambda s=stage: s.run(ctx, state), stage_timeout, stage.name
+    try:
+        for index, stage in enumerate(stages):
+            ctx.stage_name = stage.name
+            started = time.monotonic()
+            try:
+                # Entering a stage always costs one turn: this is the hard cap.
+                ctx.spend_turn()
+                output = _call_with_timeout(
+                    lambda s=stage: s.run(ctx, state), stage_timeout, stage.name
+                )
+            except HarnessError as exc:
+                result.error = f"{type(exc).__name__}: {exc}"
+                result.turns_used = ctx.turns_used
+                return result
+
+            if not isinstance(output, dict):
+                result.error = f"TypeError: stage {stage.name!r} returned {type(output).__name__}"
+                result.turns_used = ctx.turns_used
+                return result
+
+            state.update(output)
+            record = {"index": index, "run_id": run_id, "stage": stage.name, "output": output}
+            path = checkpoint_path(runs_dir, run_id, index, stage.name)
+            _write_json(path, record)
+            written.append(path.stem)
+            result.records.append(record)
+            _emit(record, out)
+
+            # Timing is deliberately kept out of the replayable record.
+            _write_json(
+                runs_dir / run_id / f"{index:02d}-{stage.name}.timing.json",
+                {"stage": stage.name, "seconds": round(time.monotonic() - started, 6)},
             )
-        except HarnessError as exc:
-            result.error = f"{type(exc).__name__}: {exc}"
-            result.turns_used = ctx.turns_used
-            return result
-
-        if not isinstance(output, dict):
-            result.error = f"TypeError: stage {stage.name!r} returned {type(output).__name__}"
-            result.turns_used = ctx.turns_used
-            return result
-
-        state.update(output)
-        record = {"index": index, "run_id": run_id, "stage": stage.name, "output": output}
-        _write_json(checkpoint_path(runs_dir, run_id, index, stage.name), record)
-        result.records.append(record)
-        _emit(record, out)
-
-        # Timing is deliberately kept out of the replayable record.
-        _write_json(
-            runs_dir / run_id / f"{index:02d}-{stage.name}.timing.json",
-            {"stage": stage.name, "seconds": round(time.monotonic() - started, 6)},
-        )
+    finally:
+        # A partial run still publishes an honest manifest of what it reached.
+        _write_manifest(runs_dir, run_id, written)
 
     result.turns_used = ctx.turns_used
     return result
@@ -181,12 +207,13 @@ def load_checkpoints(run_id: str, *, runs_dir: Path = DEFAULT_RUNS_DIR) -> list[
     run_dir = Path(runs_dir) / run_id
     if not run_dir.is_dir():
         raise FileNotFoundError(f"no such run: {run_dir}")
-    # index.json is the dashboard's stage manifest, not a checkpoint, and
-    # *.timing.json is deliberately excluded from the replayable record.
+    # Match the checkpoint name, rather than listing the files to skip. A run
+    # directory accumulates neighbours -- the dashboard's index.json manifest,
+    # timing sidecars, a human override someone dropped in -- and a denylist has
+    # to be updated every time one appears. It was not, once: index.json was
+    # globbed in as a checkpoint and replay died on KeyError: 'output'.
     files = sorted(
-        p
-        for p in run_dir.glob("*.json")
-        if not p.name.endswith(".timing.json") and p.name != "index.json"
+        p for p in run_dir.glob("[0-9][0-9]-*.json") if not p.name.endswith(".timing.json")
     )
     if not files:
         raise FileNotFoundError(f"run {run_id!r} has no checkpoints")
@@ -205,18 +232,39 @@ def replay(run_id: str, *, runs_dir: Path = DEFAULT_RUNS_DIR, out=None) -> RunRe
 
 
 def _default_run_id() -> str:
-    return time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+    return os.environ.get("RUN_ID", "").strip() or time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+
+
+def _env_number(name: str, default: float) -> float:
+    """Read a numeric knob from the environment, ignoring anything unusable.
+
+    The env template documents these, so the code has to actually read them --
+    a documented variable nothing consumes is a lie in a config file.
+    """
+    raw = os.environ.get(name, "").strip()
+    try:
+        return float(raw) if raw else default
+    except ValueError:
+        return default
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     from company.stages import PIPELINE, initial_state
 
     parser = argparse.ArgumentParser(prog="company", description=__doc__)
-    parser.add_argument("--run-id", default=None, help="run identifier (default: UTC timestamp)")
+    parser.add_argument(
+        "--run-id", default=None, help="run identifier (default: $RUN_ID, else a UTC timestamp)"
+    )
     parser.add_argument("--replay", metavar="RUN_ID", help="re-emit a prior run from checkpoints")
     parser.add_argument("--runs-dir", default=str(DEFAULT_RUNS_DIR), type=Path)
-    parser.add_argument("--max-turns", type=int, default=DEFAULT_MAX_TURNS)
-    parser.add_argument("--stage-timeout", type=float, default=DEFAULT_STAGE_TIMEOUT)
+    parser.add_argument(
+        "--max-turns", type=int, default=int(_env_number("MAX_TURNS", DEFAULT_MAX_TURNS))
+    )
+    parser.add_argument(
+        "--stage-timeout",
+        type=float,
+        default=_env_number("STAGE_TIMEOUT_S", DEFAULT_STAGE_TIMEOUT),
+    )
     args = parser.parse_args(argv)
 
     if args.replay:

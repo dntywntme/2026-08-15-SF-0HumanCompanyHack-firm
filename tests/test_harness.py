@@ -113,6 +113,7 @@ def test_checkpoints_are_written(tmp_path):
         "01-process.timing.json",
         "02-deliver.json",
         "02-deliver.timing.json",
+        "index.json",
     ]
     payload = json.loads(checkpoint_path(tmp_path, "r5", 0, "intake").read_text())
     assert payload["stage"] == "intake"
@@ -152,6 +153,34 @@ def test_replay_is_stable_across_repeats(tmp_path):
 def test_replay_of_unknown_run_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         replay("nope", runs_dir=tmp_path, out=io.StringIO())
+
+
+def test_the_manifest_lists_what_the_run_produced(tmp_path):
+    run_pipeline(PIPELINE, "r9", runs_dir=tmp_path, out=io.StringIO())
+    manifest = json.loads((tmp_path / "r9" / "index.json").read_text())
+    assert manifest == {"stages": ["00-intake", "01-process", "02-deliver"]}
+
+
+def test_a_partial_run_still_publishes_an_honest_manifest(tmp_path):
+    log: list[str] = []
+    stages = [_recorder(n, log) for n in ("alpha", "beta", "gamma")]
+    run_pipeline(stages, "r10", runs_dir=tmp_path, max_turns=2, out=io.StringIO())
+    manifest = json.loads((tmp_path / "r10" / "index.json").read_text())
+    # gamma never ran, so the dashboard must not be told to fetch it.
+    assert manifest == {"stages": ["00-alpha", "01-beta"]}
+
+
+def test_stray_json_in_a_run_directory_is_not_a_checkpoint(tmp_path):
+    # The regression this exists for: the dashboard's manifest was globbed in as
+    # a checkpoint and replay died on KeyError: 'output'. Anything that is not a
+    # NN-stage.json record has to be ignored, not parsed.
+    run_pipeline(PIPELINE, "r11", runs_dir=tmp_path, out=io.StringIO())
+    (tmp_path / "r11" / "notes.json").write_text('{"not": "a checkpoint"}')
+    (tmp_path / "r11" / "human_override.json").write_text('{"responses": ["x"]}')
+
+    records = load_checkpoints("r11", runs_dir=tmp_path)
+    assert [r["stage"] for r in records] == ["intake", "process", "deliver"]
+    replay("r11", runs_dir=tmp_path, out=io.StringIO())  # must not raise
 
 
 def test_non_dict_stage_output_is_rejected(tmp_path):
