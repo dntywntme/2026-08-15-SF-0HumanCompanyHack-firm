@@ -16,6 +16,8 @@ pay for the answer. That call, and its unit economics, are what this repo is.
 
 - [Live dashboard](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/) — the P&L, the decision log, and the run
 - [Live ledger, as JSON](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/runs/ledger.json) — every figure this project claims
+- [The offer, machine-readable](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/.well-known/offer.json) — price, wire schema and terms, for the agent that buys
+- [Terms and privacy](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html) — cited by id on every answer
 - **Counterparty:** [`…-client`](https://github.com/dntywntme/2026-08-15-SF-0HumanCompanyHack-client) — the assistant agent that orders, judges, and pays
 - **What was submitted, and to which tracks:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 - **The organizers' rule, clause by clause, with the gaps:** [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
@@ -130,7 +132,9 @@ Honest accounting, because a "zero human company" claim invites scrutiny.
 | Terac: buy human expertise, measure before/after | **Live** — see the ledger; the before/after is a field on the product |
 | Stripe: collect revenue | **Live in a sandbox**, labelled as such on the site |
 | Compliance gate: refuse what we may not sell, redact what must not travel | **Built, tested** — rules are hand-written, not counsel-reviewed |
-| Outbound | **Built, deliberately narrow** — the order's own thread and our own surface; no cold contact |
+| Published terms and privacy, cited by id on every answer | **Built** — and they say, at the top, that no lawyer read them |
+| Jurisdiction-aware notices (`eu` · `uk` · `us` · `us-ca`) | **Built** — an order that does not say gets the strictest set |
+| Outbound | **Built, deliberately narrow** — the order's own thread, plus a machine-readable offer; no cold contact |
 | Trust boundary: Broker ⟷ client across separate repos | Enforced by credential scope today |
 | Governance rails (Builder/Integrator split) | Architecture, not operating history — branch protection is off |
 | A legal entity, accounting, tax, a dispute path | **Absent.** [What each would take](docs/REQUIREMENTS.md#what-is-genuinely-missing) |

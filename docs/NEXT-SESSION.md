@@ -14,7 +14,7 @@ holds before acting.
 | Terac | Two studies **fulfilled** (`e39vxoxasopgrblq6tchgf68`, `w4pxs0mrufeqo9kzuruzsvui`) — $18.00 paid to 4 people at $4.50 CPI, 30 screened (22 + 8), balance $125 → $107. Study #2 was created *and* launched by the agent |
 | Stripe | $4.00 settled across 4 charges by the client agent, unattended, **sandbox** (`livemode: false`) |
 | Pipeline | **Nine stages**: intake · comply · triage · source · verify · build · price · deliver · market |
-| Tests | Broker 79, client 36, ruff clean both |
+| Tests | Broker 95, client 40, ruff clean both |
 | Replay | Byte-identical on the recorded tier with no keys, and now asserted by a test rather than diffed by hand |
 | CI | ci · pages · ledger · run · intake (Broker), **ci** · pages · pay (client) |
 
@@ -60,18 +60,23 @@ Struck from the previous handoff, with where it went:
 
 ## Still open, in order
 
-1. **Secrets.** `TERAC_API_KEY` (Broker) unlocks tier-1 live sourcing;
-   `CLIENT_GITHUB_TOKEN` (client) lets the client agent open work orders. Scope
-   the latter to **Issues: write on the Broker repo only** — that scope *is* the
-   trust boundary. `STRIPE_RESTRICTED_KEY` and `CLIENT_STRIPE_KEY` are set and
-   working.
-2. **The published golden run is on the `recorded` tier.** It was regenerated
-   locally, where there is no Terac key. The hourly `run` workflow restores the
-   `terac` tier on its next pass; if it does not, the key is missing.
-3. **Branch protection is off**, so the Builder/Integrator split in
-   `ARCHITECTURE.md` is architecture rather than operating history. One settings
-   change converts a claim into evidence: Settings → Branches → require a pull
-   request, require review from Code Owners, block force-push.
+1. **`CLIENT_GITHUB_TOKEN` is the one missing secret.** It lets the client agent
+   open work orders. Scope it to **Issues: write on the Broker repo only** — that
+   scope *is* the trust boundary. `TERAC_API_KEY`, `STRIPE_RESTRICTED_KEY` and
+   `CLIENT_STRIPE_KEY` are all set and working: a manual `run` on 2026-08-17
+   returned `tier=terac`, which is the proof the Terac key is live.
+2. **The golden run in a fresh clone is on the `recorded` tier**, because a
+   clone has no key. The scheduled `run` workflow republishes it on the `terac`
+   tier within the hour, so what a judge opens is the live tier. Both are
+   labelled in the checkpoint; neither is a fallback that hides itself.
+3. **Branch protection is off**, and turning it on is not free. `run.yml` and
+   `ledger.yml` push directly to `main` with the default `GITHUB_TOKEN` — that
+   is what republishes the ledger every five minutes. Requiring a pull request
+   on `main` **breaks both loops** unless the bot is added to the bypass list.
+   The honest sequence is: add `github-actions[bot]` to "Allow specified actors
+   to bypass required pull requests", *then* require a PR and Code Owner review.
+   Doing it in the other order takes the live P&L down, which is the one thing on
+   the dashboard a judge is most likely to check.
 4. **Two stale branches**, `feat/gh-hosting` and `feat/contracts`, sit ~2,900
    lines behind `main` and carry no unique commits. They are what re-report
    already-fixed findings to the code scanner. Delete them.
@@ -91,24 +96,26 @@ once — otherwise the `*/5` ledger cron becomes a spending loop.
 
 ## Worth building next, in order
 
-1. **Terms of service and a privacy notice**, published and referenced by id in
-   every deliverable, so the disclosures the `comply` stage attaches point at
-   something binding. Cheapest credibility available.
-2. **Jurisdiction on the work order.** One field, and the compliance rules become
-   a function of it. The gate already takes an order and returns a `Screening`,
-   so this is a parameter rather than a rewrite.
-3. **A machine-readable offer** at `/.well-known/offer.json` beside the
-   dashboard, so another agent can discover the price and the schema without a
-   human reading a landing page. That is the acquisition channel this company
-   can honestly have; see [`REQUIREMENTS.md`](REQUIREMENTS.md#2-marketing--outbounds).
-4. **Real participant quotes.** The task responses are dashboard-only; paste them
+1. **Real participant quotes.** The task responses are dashboard-only; paste them
    into `HUMAN_INPUT.responses` and regenerate the golden run. The before/after
-   panel is built and waiting for them.
-5. **A money-flow strip** — one proportional bar, `IN $4.00 ▏ OUT $18.00` — so the
-   negative margin reads instantly instead of needing a paragraph.
-6. **An adversarial lane that checks the reply.** It sends six attacks over the
+   panel is built and waiting for them, and it is the single highest-value thing
+   left — it makes the mandatory requirement concrete rather than structural.
+2. **An adversarial lane that checks the reply.** It sends six attacks over the
    real wire and nothing asserts what Broker did with them; the evidence is a
-   human reading the issue thread.
+   human reading the issue thread. The attacks are the security claim, so they
+   deserve the same treatment the payment guards got.
+3. **An entity.** Terms, privacy and disclosures are all published now, and none
+   of them has a legal person behind it. Stripe Atlas is the route; everything in
+   [`REQUIREMENTS.md`](REQUIREMENTS.md#5-legalcompliance) below it depends on it.
+4. **Calibrate the confidence score.** Every run records the score and whether
+   the panel disagreed. Nobody has checked whether they correlate, and the
+   escalation rate that decides viability falls straight out of it.
+5. **A dispute path.** An agent that can take money has to be able to be wrong.
+   The refund policy is the piece, and it needs a spend guard of its own.
+
+Built in the 2026-08-17 pass, so struck from this list: published terms and
+privacy cited by id, jurisdiction on the work order, the machine-readable offer
+at `/.well-known/offer.json`, and the money-flow strip.
 
 Longer term, the client is where the societies.io-shaped idea would go: replace
 the single `evaluate()` with a handful of mandate profiles differing on risk
@@ -127,7 +134,7 @@ recorded fixtures, so there are barely any LLM spans to trace.
 ## Reproduce anything
 
 ```bash
-make setup && make test && make lint         # 79 tests
+make setup && make test && make lint         # 95 tests
 make replay                                  # byte-identical, no network, no keys
 make e2e                                     # 18 viewport/page combos, both sites
 ```

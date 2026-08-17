@@ -31,10 +31,10 @@ cat runs/demo/0*-*.json            # the checkpoints those claims come from
 | Clause | State | Where it runs | Honest gap |
 |---|---|---|---|
 | Building the product | **Runs** | `build` stage → `Product` with before/after | the product is a brief, not software; nothing compiles |
-| Marketing & outbounds | **Runs, deliberately narrow** | `market` stage → `Offer`, posted to the order's thread | no cold outbound: the company has no opted-in audience |
+| Marketing & outbounds | **Runs, deliberately narrow** | `market` stage → `Offer`, posted to the order's thread and published at [`/.well-known/offer.json`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/.well-known/offer.json) | no cold outbound: the company has no opted-in audience |
 | Selling to customers | **Runs** | `intake` · `price` · `deliver`, over a public Issue thread | one customer, who is our own counterparty agent |
 | Handling payments | **Runs** | client settles a PaymentIntent; `scripts/poll_ledger.py` reconciles | Stripe sandbox; no refunds, no disputes, no KYC |
-| Legal/compliance | **Runs** | `comply` stage → `src/company/compliance.py` | rules are hand-written, not counsel-reviewed; no jurisdiction logic |
+| Legal/compliance | **Runs** | `comply` stage → `src/company/compliance.py`; terms and privacy published at [`/legal.html`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html) and cited by id on every answer | rules are hand-written, not counsel-reviewed; no legal entity behind them |
 | Making hard decisions | **Runs** | `DecisionLog` on every stage; `policy.authorize_spend` | confidence is self-assessed and uncalibrated |
 | *Everything in between* | Partial | see [What is genuinely missing](#what-is-genuinely-missing) | no accounting entity, no tax, no dispute path |
 
@@ -94,15 +94,19 @@ that never declines a channel is a spam function.
 came from one counterparty. The company has no list, no inbound funnel, and no
 way to reach a customer who has not already opened a thread with it.
 
-**Outlook.** Acquisition needs a channel where the recipient opted in first, and
-there are two credible ones. The cheap one is a **public offer surface with a
-machine-readable price**: publish `/.well-known/offer.json` alongside the
-dashboard so another agent can discover the price, the schema and the SLA without
-a human reading a landing page — agent-to-agent distribution, which is the
-customer this company actually has. The expensive one is **x402**: an HTTP 402
-response carrying the price turns every endpoint into its own storefront, and
-discovery becomes a request rather than a mailing list. Neither was built; the
-first is roughly two hours, the second closer to a day with settlement testing.
+**Built since:** `/.well-known/offer.json` is published alongside the dashboard,
+so another agent can discover the price, the wire schema, the terms id and how to
+order without a human reading a landing page. It is **derived from the run's own
+market checkpoint** by `scripts/build_site.py` rather than hand-written, which is
+what stops it making a claim the run did not make — a static offer file goes
+stale the first time the price moves. That is the acquisition channel this
+company can honestly have: its customer is a program, so the offer is readable by
+one.
+
+**Outlook.** The remaining channel is **x402**: an HTTP 402 response carrying the
+price turns every endpoint into its own storefront, and discovery becomes a
+request rather than a mailing list. Roughly a day with settlement testing. It
+needs a server, which a static site is not — the honest blocker, not the price.
 
 What we would *not* build is outbound to people who did not ask. That is a
 decision, and it is recorded as one on every run.
@@ -171,34 +175,53 @@ which refusing is still free. It does three things:
   the redaction is recorded so the customer can see what was removed.
 - **Attaches disclosures.** Every deliverable carries: produced by an autonomous
   agent with no human at Broker reviewing it; opinion research, not professional
-  advice; and whether human judgement was purchased. *A zero-human company that
-  does not disclose that it is one is not compliant, it is just quiet.*
+  advice; whether human judgement was purchased; the notices for the customer's
+  stated jurisdiction; and the **id of the terms it was sold under**. *A
+  zero-human company that does not disclose that it is one is not compliant, it
+  is just quiet.*
+
+The terms and the privacy notice are published at
+[`/legal.html`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html)
+and referenced by id (`broker-terms-<version>`) on every answer, so a customer
+can always say which version they were sold under and we cannot quietly change
+what they agreed to. A test asserts the id a deliverable cites is one the page
+actually publishes — a version reference that points at nothing is worse than no
+version reference at all.
+
+An order may state a **jurisdiction**, and the notices follow it: GDPR for `eu`,
+UK GDPR for `uk`, CCPA for `us-ca`. An order that does not say gets the union of
+everything we implement, because *not knowing where a customer is, is not a
+reason to give them fewer rights*. Nothing is ever refused for where the customer
+lives — refusing someone for their address is a decision this company has no
+basis to make, so jurisdiction only ever adds obligations.
 
 A refused order **halts the run**. Every stage after the gate records that it ran
 and did nothing, so the published run shows the whole company declining to act
 rather than a gap where the work would have been.
 
-**Gap.** The rules are hand-written regular expressions, not reviewed by counsel.
-There is no jurisdiction logic — the same rules apply to a customer in California
-and one in Germany, where the data-protection obligations are materially
-different. There is no entity: no incorporation, no registered agent, no terms of
-service a customer agreed to, and no privacy policy naming a controller.
+**Gap.** The rules are hand-written regular expressions, not reviewed by counsel,
+and the published terms say so at the top of the page rather than in a footnote.
+The deeper problem is that **there is no entity**: no incorporation, no
+registered agent, nothing that can be sued, and therefore no counterparty behind
+the terms a customer is asked to rely on. The jurisdiction notices are the
+disclosures a static page can satisfy, not a compliance programme.
 
 **Outlook, in the order it matters.**
 
-1. **Terms of service and a privacy notice**, published on the dashboard and
-   referenced by id in every deliverable, so the disclosures point at something
-   binding. Half a day, and it is the cheapest credibility in the list.
-2. **Jurisdiction on the work order.** One field, and the compliance rules become
-   a function of it: GDPR obligations when the customer is in the EU, state-level
-   rules in the US. The gate is already the right shape for this — it takes the
-   order and returns a `Screening` — so it is a parameter, not a rewrite.
-3. **Counsel-reviewed refusal rules.** The regex list is a first approximation of
-   a judgement a lawyer should make once. Stripe Atlas (a hackathon credit we did
-   not use) is the obvious route to an entity that can hold the account, sign the
-   terms, and be the controller the privacy notice names.
-4. **Retention with a clock.** Today "we publish aggregates only" is enforced by
-   the poller's shape. It should be a stated period with a deletion job behind it.
+1. **An entity.** Everything else in this section is a document without one.
+   Stripe Atlas — a hackathon credit we did not use — is the obvious route to
+   something that can hold the account, sign the terms, and be the controller the
+   privacy notice names. A day, mostly waiting.
+2. **Counsel-reviewed refusal rules.** The regex list is a first approximation of
+   a judgement a lawyer should make once. It will have both false positives (an
+   order refused for containing the word "liability") and false negatives.
+3. **Retention with a clock.** Today the record is a public git history and a
+   public issue thread, so retention is *indefinite* and the privacy notice says
+   so. It should be a stated period with a deletion job behind it, and that
+   requires somewhere to put orders that is not a public repository.
+4. **A refusal appeal path.** The gate can be wrong, and a customer whose order
+   was refused has nowhere to say so except the thread. That is the same missing
+   dispute machinery as clause 4.
 
 ## 6. Making hard decisions
 
@@ -243,7 +266,7 @@ Stated plainly, because a "runs a company autonomously" claim invites scrutiny.
 | Accounting | The P&L is two numbers polled from Stripe, not books | Double-entry ledger with the same checkpoint discipline; a day |
 | Tax | Revenue that exists has an obligation attached | Follows the entity |
 | A dispute path | An agent that can take money must handle being wrong | Refund policy the agent applies, with a spend guard of its own; a day |
-| Customer acquisition | One customer, and it is ours | See clause 2 |
+| Customer acquisition | One customer, and it is ours; the machine-readable offer is published but nothing consumes it yet | See clause 2 |
 | Calibrated confidence | The escalation rate decides viability and is unmeasured | 100 orders of real traffic |
 | Governance in operation | CODEOWNERS and the Builder/Integrator split are architecture; branch protection is off | One settings change, and then it is operating history |
 
