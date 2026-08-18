@@ -178,7 +178,7 @@ recorded fixtures, so there are barely any LLM spans to trace.
 ## Reproduce anything
 
 ```bash
-make setup && make test && make lint         # 95 tests
+make setup && make test && make lint         # 101 tests
 make replay                                  # byte-identical, no network, no keys
 make e2e                                     # 18 viewport/page combos, both sites
 ```
