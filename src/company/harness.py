@@ -75,10 +75,6 @@ class RunContext:
         self.turns_used += n
         return self.turns_used
 
-    @property
-    def turns_left(self) -> int:
-        return self.max_turns - self.turns_used
-
 
 @dataclass
 class RunResult:

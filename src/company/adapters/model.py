@@ -35,7 +35,6 @@ import os
 import re
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
 from typing import Any
 
 from company.adapters.http import open_https
@@ -64,14 +63,6 @@ _SUBJECTIVE = re.compile(
     r"convincing|opinion|feel|taste|should i|which one)\b",
     re.I,
 )
-
-
-@dataclass(frozen=True)
-class Score:
-    confidence: float
-    source: str  # "live" when the model answered, "heuristic" when degraded
-    model: str
-    note: str = ""
 
 
 def _config(api_key: str | None, base: str | None, model: str | None) -> tuple[str, str, str]:
@@ -105,40 +96,14 @@ def _complete(question: str, key: str, base: str, model: str, timeout: float) ->
     return payload["choices"][0]["message"]["content"]
 
 
-def _heuristic(question: str, note: str) -> Score:
+def _heuristic_confidence(question: str) -> float:
     """A deliberately pessimistic fallback.
 
     When we cannot measure our own confidence we assume it is low, because the
     expensive mistake is answering confidently from ignorance, not buying an
     opinion we did not strictly need.
     """
-    confidence = 0.30 if _SUBJECTIVE.search(question) else 0.55
-    return Score(confidence=confidence, source="heuristic", model="none", note=note)
-
-
-def score_confidence(
-    question: str,
-    *,
-    api_key: str | None = None,
-    base: str | None = None,
-    model: str | None = None,
-    timeout: float = 20.0,
-) -> Score:
-    """How confident the agent is that it can answer without buying help."""
-    key, root, name = _config(api_key, base, model)
-    if not key or not root:
-        return _heuristic(question, "MODEL_API_KEY or MODEL_API_BASE not set")
-    try:
-        content = _complete(question, key, root, name, timeout)
-    except urllib.error.HTTPError as exc:
-        return _heuristic(question, f"model HTTP {exc.code}")
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError, IndexError) as exc:
-        return _heuristic(question, f"model unavailable: {type(exc).__name__}")
-
-    parsed = _parse(content)
-    if parsed is None or not 0.0 <= parsed.get("confidence", -1) <= 1.0:
-        return _heuristic(question, "model returned no parsable confidence")
-    return Score(confidence=float(parsed["confidence"]), source="live", model=name)
+    return 0.30 if _SUBJECTIVE.search(question) else 0.55
 
 
 def obtain_draft(
@@ -180,7 +145,7 @@ def obtain_draft(
     if not isinstance(confidence, (int, float)) or not 0.0 <= confidence <= 1.0:
         # An answer we cannot score is an answer we must not sell on our own
         # judgement. Keep it, and be pessimistic about it.
-        confidence = _heuristic(question, "").confidence
+        confidence = _heuristic_confidence(question)
 
     unknowns = [str(u) for u in parsed.get("unknowns", []) if str(u).strip()][:20]
     return {

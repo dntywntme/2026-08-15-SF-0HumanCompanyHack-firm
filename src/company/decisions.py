@@ -107,6 +107,3 @@ class DecisionLog:
     def irreversible(self) -> list[Decision]:
         """Decisions that moved money or released work. The ones that matter."""
         return [d for d in self._items if not d.reversible]
-
-    def __len__(self) -> int:
-        return len(self._items)
