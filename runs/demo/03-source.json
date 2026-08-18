@@ -55,14 +55,14 @@
         "stage": "source"
       },
       {
-        "because": "the live study returned approved submissions",
-        "chose": "terac tier",
+        "because": "no live source reachable; replayed the last known-good result",
+        "chose": "recorded tier",
         "cost_usd": "0.00",
         "kind": "buy_labor",
         "question": "where should this judgement come from?",
         "rejected": [
-          "human",
-          "recorded"
+          "terac",
+          "human"
         ],
         "reversible": true,
         "stage": "source"
@@ -70,17 +70,24 @@
     ],
     "human": {
       "cost_usd": "9.00",
-      "note": "screening answers from approved submissions; task text is dashboard-only",
       "opportunity_id": "e39vxoxasopgrblq6tchgf68",
       "participants": 2,
       "responses": [
-        "The price or a discount",
-        "How the product described itself"
+        "B \u2014 it says what it does for me, not what it is.",
+        "B \u2014 'ship faster' is on every landing page I have ever seen."
       ],
-      "source": "terac"
+      "source": "recorded"
     },
-    "incidents": [],
-    "source_tier": "terac",
+    "incidents": [
+      {
+        "category": "tool_failure",
+        "detail": "live panel unavailable; used the recorded tier",
+        "errors": [],
+        "recovery": "answered from the best judgement available and labelled it as such",
+        "stage": "source"
+      }
+    ],
+    "source_tier": "recorded",
     "stage": "source"
   },
   "run_id": "demo",

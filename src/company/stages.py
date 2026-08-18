@@ -41,7 +41,15 @@ from company.compliance import screen
 from company.decisions import DecisionLog
 from company.harness import RunContext, Stage
 from company.incidents import IncidentLog, summarize_validation_error
-from company.models import Deliverable, Draft, Offer, Product, WorkOrder, price_from_cogs
+from company.models import (
+    Deliverable,
+    Draft,
+    HumanInput,
+    Offer,
+    Product,
+    WorkOrder,
+    price_from_cogs,
+)
 from company.policy import Policy, authorize_spend
 
 # The demo order: a question an LLM cannot answer from its weights, because the
@@ -142,6 +150,33 @@ def _halted(state: dict[str, Any]) -> str | None:
 def _stop(name: str, reason: str, state: dict[str, Any]) -> dict[str, Any]:
     """A stage that ran, did nothing, and says why. Still checkpointed."""
     return {"stage": name, "skipped_because": reason, **_render(state)}
+
+
+def _checked_human(raw: dict[str, Any], incidents: IncidentLog) -> HumanInput | None:
+    """Validate what an adapter handed back, before a single figure is trusted.
+
+    The adapter degrades rather than raising, which is right, but it returns a
+    plain dict -- and tier 2 reads that dict out of a file on disk while tier 1
+    reads it off the wire. Neither is ours. Until this existed, the money in it
+    was used unvalidated: the spend guard authorised the *fixture's* cost while
+    the run committed the *adapter's*, so a `cost_usd` of 500.00 in a human
+    override sailed past a 27.00 total cap and the run reported success.
+
+    Returns None when the payload is unusable, having recorded why. The caller
+    falls back to the recorded floor rather than raising, because an adapter's
+    bad day must not become a traceback three stages downstream.
+    """
+    try:
+        return HumanInput(**{k: raw.get(k) for k in HumanInput.model_fields})
+    except Exception as exc:  # pydantic ValidationError and anything malformed
+        incidents.record(
+            "schema_violation",
+            "source",
+            "the sourcing tier returned a payload the contract rejects",
+            "fell back to the recorded floor; nothing was committed on its figures",
+            summarize_validation_error(exc),
+        )
+        return None
 
 
 def intake(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
@@ -339,7 +374,23 @@ def source(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     if not state.get("escalate"):
         return {"stage": "source", "human": None, "cogs_usd": "0.00", **_render(state)}
 
-    requested = Decimal(str(state.get("human", HUMAN_INPUT)["cost_usd"]))
+    ctx.spend_turn()
+    # Three tiers: live Terac, a human override, then the recorded floor. Each
+    # stamps its own source, so the checkpoint always says which one answered.
+    #
+    # Obtained BEFORE the guard runs, because you cannot authorise a number you
+    # have not been told yet. Reading submissions costs nothing -- the money is
+    # committed when a study launches, which this deliberately never does -- so
+    # nothing is spent by asking the price.
+    human = state.get("human") or obtain_human_input(HUMAN_INPUT)
+    checked = _checked_human(human, incidents)
+    if checked is None:
+        human = {**HUMAN_INPUT, "source": "recorded"}
+        checked = HumanInput(**{k: HUMAN_INPUT[k] for k in HumanInput.model_fields})
+    tier = human.get("source", "recorded")
+
+    # The guard sees what the tier actually charges, not what the fixture says.
+    requested = checked.cost_usd
     verdict = authorize_spend(
         policy,
         requested_usd=requested,
@@ -356,12 +407,6 @@ def source(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
             "answered from the agent draft alone and priced accordingly",
         )
         return {"stage": "source", "human": None, "cogs_usd": "0.00", **_render(state)}
-
-    ctx.spend_turn()
-    # Three tiers: live Terac, a human override, then the recorded floor. Each
-    # stamps its own source, so the checkpoint always says which one answered.
-    human = state.get("human") or obtain_human_input(HUMAN_INPUT)
-    tier = human.get("source", "recorded")
     if tier != "terac":
         incidents.record(
             "tool_failure",
@@ -385,7 +430,7 @@ def source(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         "stage": "source",
         "human": human,
         "source_tier": tier,
-        "cogs_usd": human["cost_usd"],
+        "cogs_usd": str(checked.cost_usd),
         **_render(state),
     }
 

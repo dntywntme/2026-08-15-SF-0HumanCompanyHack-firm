@@ -185,3 +185,45 @@ def test_a_caller_supplying_its_own_draft_is_answering_the_question(tmp_path):
     draft = {"answer": "A real answer for that question.", "confidence": 0.2, "unknowns": []}
     product = _run(tmp_path, order=order, draft=draft).emitted("product")
     assert product["answers_question"] is True
+
+
+# ── The adapter boundary ──────────────────────────────────────────────────────
+
+
+def test_the_guard_sees_what_the_tier_actually_charges(tmp_path, monkeypatch):
+    """The spend guard was authorising one number and the run was spending another.
+
+    It read the fixture's cost while the pipeline committed whatever the adapter
+    returned, so a cost_usd of 500.00 from a human override sailed past a 27.00
+    total cap and the run reported success. This is the control the README calls
+    the COGS-attack defence.
+    """
+    override = tmp_path / "human_override.json"
+    override.write_text('{"responses": ["x"], "cost_usd": "500.00", "participants": 1}')
+    monkeypatch.setattr("company.adapters.terac.OVERRIDE", override)
+    monkeypatch.delenv("REPLAY_MODE", raising=False)
+
+    result = _run(tmp_path, run_id="drain")
+
+    assert result.ok, result.error
+    asked = [d for d in result.state["decisions"] if "commit" in d["question"]][0]
+    assert "500.00" in asked["question"], "the guard must see the tier's number, not the fixture's"
+    assert asked["chose"] == "refuse"
+    assert result.state["cogs_usd"] == "0.00"
+
+
+def test_a_malformed_tier_degrades_instead_of_raising(tmp_path, monkeypatch):
+    # The adapter never raises, but the dict it returned was used unvalidated,
+    # so a bad figure surfaced as a traceback three stages later -- after
+    # checkpoints were written and the money was recorded as spent.
+    override = tmp_path / "human_override.json"
+    override.write_text('{"responses": ["x"], "cost_usd": "4.5678", "participants": 1}')
+    monkeypatch.setattr("company.adapters.terac.OVERRIDE", override)
+    monkeypatch.delenv("REPLAY_MODE", raising=False)
+
+    result = _run(tmp_path, run_id="malformed")
+
+    assert result.ok, result.error
+    assert result.state["source_tier"] == "recorded"
+    assert result.state["cogs_usd"] == "9.00"
+    assert any(i["category"] == "schema_violation" for i in result.state["incidents"])
