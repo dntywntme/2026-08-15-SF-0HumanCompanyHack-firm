@@ -89,7 +89,7 @@ you pay on verified completion.
 
 Dropped deliberately. Render Workflows was our candidate for two jobs: hosting
 the dashboard and running the ledger poller. Both are now GitHub-native — Pages
-serves the site from the `gh-pages` branch and a scheduled Action polls Stripe —
+serves the site from a workflow-uploaded artifact and a scheduled Action polls Stripe —
 which removes a dependency, a signup, and an unverified requirement (whether
 deploying a Workflow needs a payment method) from the critical path.
 
