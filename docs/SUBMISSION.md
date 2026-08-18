@@ -142,12 +142,21 @@ published measurement rather than preference (see
 
 Stated because the omissions are decisions, not gaps.
 
-- **Pioneer** — the classifier is built and pinned to an open-weight model
+- **Pioneer** — the classifier was built and pinned to an open-weight model
   (`Qwen/Qwen3-8B`), but every inference call returned **404**, with a valid API
   key and a redeemed voucher on the account. We could not get a single
   completion back, so we do not claim a track whose criterion is that an
-  open-weight model ran. The code degrades to a pessimistic heuristic instead of
-  failing, which is why the pipeline still completes without it.
+  open-weight model ran.
+
+  Since the event the adapter has been generalised: it is
+  [`adapters/model.py`](../src/company/adapters/model.py) and names a protocol
+  rather than a vendor, so any host serving the OpenAI chat-completions shape
+  works — Cloudflare Workers AI on `@cf/meta/llama-3.1-8b-instruct` is the
+  documented default, and Pioneer is two changed values. Pinning to one provider
+  is what made the original outage un-routable. **No model is configured today**,
+  so the draft still comes from the recorded fixture and every deliverable says
+  so; the code degrades rather than failing, which is why the pipeline completes
+  without one.
 - **Linq** — the track rewards a real phone number on iMessage and we chose not
   to route inbound messages to a personal one. There is no honest partial claim.
 - **Band** — we ran out of time to integrate it properly, and a partial
@@ -254,7 +263,7 @@ dollar value attached. That is the piece we would build on.
 ## Verify it yourself
 
 ```bash
-make setup && make test && make lint   # 95 tests here, 40 in the client repo
+make setup && make test && make lint   # 101 tests here, 40 in the client repo
 make replay                            # byte-identical, no network, no keys
 make e2e                               # 18 viewport/page combos, both sites
 ```
