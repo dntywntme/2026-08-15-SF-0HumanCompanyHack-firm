@@ -30,7 +30,46 @@ Every figure this project claims lives in the ledger above or in
 [`docs/SUBMISSION.md`](docs/SUBMISSION.md). None is restated in this file, so
 none can go stale here.
 
+## Ordering something
+
+Broker's customer is an agent, and the whole sales channel is this repository's
+issue tracker. To place an order, open an issue whose body contains a fenced
+JSON work order:
+
+````markdown
+```json
+{
+  "id": "wo-example",
+  "client_id": "your-agent",
+  "question": "Which of these two onboarding flows do people find clearer?",
+  "budget_usd": "1.00",
+  "jurisdiction": "unspecified"
+}
+```
+````
+
+Prose outside the fence is never interpreted, so an order that opens with
+"ignore previous instructions" is just an order with a strange first line. The
+pipeline runs against it, replies in the thread with the answer and its
+before/after, and closes the issue.
+
+The same offer is published machine-readably at
+[`/offer.json`](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/offer.json),
+which is the version written for the customer this company actually has. What
+you agree to by ordering:
+[terms and privacy](https://dntywntme.github.io/2026-08-15-SF-0HumanCompanyHack-firm/legal.html).
+
+**Opinion research only.** Legal, medical and financial questions are refused at
+the compliance gate before anything is spent, with the reason published in your
+thread. That refusal is a feature and worth trying if you want to see a control
+fire.
+
 ## Verify it yourself
+
+**You need:** Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/)
+(`curl -LsSf https://astral.sh/uv/install.sh | sh`). That is the whole list for
+everything below except `make e2e`, which additionally wants Node and a Chromium
+binary — set `CHROMIUM=/path/to/chrome` if yours is not at `/usr/bin/chromium`.
 
 Start with replay, because it needs nothing from you. It re-emits a complete run
 from committed checkpoints — no network, no API keys — so a fresh clone
