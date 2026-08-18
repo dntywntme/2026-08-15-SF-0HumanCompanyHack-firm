@@ -27,6 +27,7 @@ Category = Literal[
     "payment_failed",  # charge declined, abandoned or underpaid
     "compliance_refusal",  # the order asked for something we may not sell
     "personal_data",  # order text carried data that must not reach a panel
+    "recorded_answer",  # answered from a fixture, not from the question asked
 ]
 
 

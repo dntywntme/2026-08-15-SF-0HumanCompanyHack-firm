@@ -123,3 +123,65 @@ def test_an_unpaid_order_buys_nothing(tmp_path):
     assert any(d["kind"] == "spend_guard" for d in result.state["decisions"])
     # It still ships: the agent's own draft, priced at the floor.
     assert result.state["deliverable"]["sourced_from"] == "agent"
+
+
+# ── What a reply is built from ────────────────────────────────────────────────
+
+
+def test_the_deliverable_is_not_in_the_final_record(tmp_path):
+    """The exact shape of the bug, pinned so it cannot come back.
+
+    ``market`` runs after ``deliver`` and returns no deliverable, so anything
+    reading ``records[-1]`` finds nothing and concludes the order was refused.
+    A live customer was told their fulfilled order had been rejected at intake.
+    """
+    result = _run(tmp_path)
+    assert "deliverable" not in result.records[-1]["output"]
+    assert result.emitted("deliverable")["work_order_id"] == "wo-1"
+
+
+def test_emitted_finds_each_artifact_from_the_stage_that_made_it(tmp_path):
+    result = _run(tmp_path)
+    for key in ("deliverable", "product", "offer", "screening"):
+        assert result.emitted(key), f"{key} is not reachable from the run result"
+
+
+def test_a_refused_order_emits_nothing_rather_than_raising(tmp_path):
+    # A halted run legitimately produces no artifacts. That is an outcome the
+    # caller has to be able to render, not an error.
+    result = _run(tmp_path, order={"id": "bad", "client_id": "", "question": ""})
+    assert result.emitted("deliverable") is None
+    assert result.emitted("product") is None
+    # ...but the decisions explaining the refusal are still reachable.
+    assert result.records[-1]["output"]["decisions"]
+
+
+def test_an_order_asking_something_new_says_the_answer_is_recorded(tmp_path):
+    """The problem a real end-to-end order exposed.
+
+    The pipeline runs on committed fixtures so replay stays byte-identical,
+    which means a customer asking something new gets the demo answer. That is
+    defensible as a mechanism demo and indefensible if it is not said out loud.
+    """
+    order = {**DEMO_ORDER, "id": "wo-new", "question": "Which onboarding step feels clearer?"}
+    result = _run(tmp_path, order=order)
+
+    product = result.emitted("product")
+    assert product["answers_question"] is False
+    assert any("RECORDED DEMONSTRATION" in d for d in product["disclosures"])
+    # And it is an incident, so it shows on the published page too.
+    assert any(i["category"] == "recorded_answer" for i in result.state["incidents"])
+
+
+def test_the_demo_order_makes_no_such_claim(tmp_path):
+    product = _run(tmp_path).emitted("product")
+    assert product["answers_question"] is True
+    assert not any("RECORDED DEMONSTRATION" in d for d in product["disclosures"])
+
+
+def test_a_caller_supplying_its_own_draft_is_answering_the_question(tmp_path):
+    # A wired model would arrive this way, and must not be labelled recorded.
+    order = {**DEMO_ORDER, "id": "wo-live", "question": "Anything at all?"}
+    draft = {"answer": "A real answer for that question.", "confidence": 0.2, "unknowns": []}
+    product = _run(tmp_path, order=order, draft=draft).emitted("product")
+    assert product["answers_question"] is True

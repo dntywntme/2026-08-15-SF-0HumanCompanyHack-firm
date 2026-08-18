@@ -73,23 +73,19 @@ jobs:
           result = run_pipeline(
               PIPELINE, run_id="issue-${{ github.event.issue.number }}", initial_state=state
           )
+          # Every artifact comes from whichever stage produced it. The logs are
+          # cumulative so the last record carries all of them; the artifacts are
+          # not, and reading them off the last record is what once reported a
+          # fulfilled order as "rejected at intake".
           last = result.records[-1]["output"] if result.records else {}
-          # A halted order produces no product and no offer, so pull each from
-          # whichever stage made it rather than from the final checkpoint.
-          def emitted(key):
-              for record in result.records:
-                  if record["output"].get(key):
-                      return record["output"][key]
-              return None
-
           pathlib.Path("reply.md").write_text(
               json.dumps(
                   {
                       "ok": result.ok,
                       "error": result.error,
-                      "deliverable": last.get("deliverable"),
-                      "product": emitted("product"),
-                      "offer": emitted("offer"),
+                      "deliverable": result.emitted("deliverable"),
+                      "product": result.emitted("product"),
+                      "offer": result.emitted("offer"),
                       "decisions": last.get("decisions", []),
                       "incidents": last.get("incidents", []),
                   },
@@ -109,6 +105,17 @@ jobs:
           d = r.get("deliverable") or {}
           p = r.get("product") or {}
           lines = ["**Broker** — order processed. No human was involved.", ""]
+          # Before the answer, never after it: a caveat under a quote is a
+          # caveat most readers never reach.
+          if p and not p.get("answers_question", True):
+              lines += [
+                  "> [!WARNING]",
+                  "> **This answer is a recorded demonstration.** No model is wired, so the "
+                  "pipeline responded to its fixed demo question rather than to the one you "
+                  "asked. The mechanism, the money and the decisions below are real; the "
+                  "answer is not an answer to your order.",
+                  "",
+              ]
           if d:
               lines += [
                   f"> {d.get('answer','')}",
@@ -118,7 +125,8 @@ jobs:
                   f"`margin: ${d.get('margin_usd')}`",
               ]
           else:
-              lines.append(f"The order was not fulfilled: `{r.get('error') or 'rejected at intake'}`")
+              why = r.get("error") or "refused before anything was spent; see the decisions below"
+              lines.append(f"The order was not fulfilled: `{why}`")
           # The before/after is the deliverable's evidence, not a footnote: it is
           # what the customer paid for and what the event's rules ask us to show.
           if p:

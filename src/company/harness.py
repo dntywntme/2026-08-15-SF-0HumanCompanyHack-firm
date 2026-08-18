@@ -92,6 +92,25 @@ class RunResult:
     def ok(self) -> bool:
         return self.error is None
 
+    def emitted(self, key: str) -> Any:
+        """Find what a run produced, from whichever stage produced it.
+
+        Reading the last checkpoint is the obvious thing and it is wrong: state
+        accumulates across stages but each *record* holds only what its own
+        stage returned. Adding a stage after ``deliver`` therefore moved the
+        deliverable out of the final record, and a reply built from
+        ``records[-1]`` told a paying customer their fulfilled order had been
+        "rejected at intake".
+
+        Returns the first truthy value found in stage order, or None. A halted
+        run legitimately produces nothing, which is not an error.
+        """
+        for record in self.records:
+            value = record.get("output", {}).get(key)
+            if value:
+                return value
+        return None
+
 
 def checkpoint_path(runs_dir: Path, run_id: str, index: int, stage_name: str) -> Path:
     return runs_dir / run_id / f"{index:02d}-{stage_name}.json"
