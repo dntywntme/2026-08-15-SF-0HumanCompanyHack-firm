@@ -1,9 +1,9 @@
 # Next session
 
-Updated 2026-08-17, after a polish pass across both repositories. The original
-handoff was written at the end of the hackathon build (2026-08-15 17:40 PDT);
-everything below is verified against the state at the later date. Check it still
-holds before acting.
+Updated 2026-08-18, after the first end-to-end run of the whole loop. The
+original handoff was written at the end of the hackathon build (2026-08-15 17:40
+PDT); everything below is verified against the state at the later date. Check it
+still holds before acting.
 
 ## Where things stand
 
@@ -14,9 +14,10 @@ holds before acting.
 | Terac | Two studies **fulfilled** (`e39vxoxasopgrblq6tchgf68`, `w4pxs0mrufeqo9kzuruzsvui`) — $18.00 paid to 4 people at $4.50 CPI, 30 screened (22 + 8), balance $125 → $107. Study #2 was created *and* launched by the agent |
 | Stripe | $4.00 settled across 4 charges by the client agent, unattended, **sandbox** (`livemode: false`) |
 | Pipeline | **Nine stages**: intake · comply · triage · source · verify · build · price · deliver · market |
-| Tests | Broker 95, client 40, ruff clean both |
+| Tests | Broker 101, client 40, ruff clean both |
 | Replay | Byte-identical on the recorded tier with no keys, and now asserted by a test rather than diffed by hand |
-| CI | ci · pages · ledger · run · intake (Broker), **ci** · pages · pay (client) |
+| CI | ci · pages · ledger · run · intake (Broker), ci · pages · pay · **order** (client) |
+| Loop | **Exercised end to end 2026-08-18**: the client agent placed issues #7 and #8 unattended, the firm answered and closed both, and both sites republished |
 
 Working copy note: both repos' `origin` now points at **dntywntme**. The
 scheduled `run` and `ledger` jobs commit to `main` hourly and every five
@@ -91,19 +92,15 @@ it visible from reading the code:
 
 ## Still open, in order
 
-1. **No secrets are missing.** All five are set, confirmed against
-   `gh secret list` on 2026-08-17: `TERAC_API_KEY`, `STRIPE_RESTRICTED_KEY` and
-   `PIONEER_API_KEY` on Broker, `CLIENT_GITHUB_TOKEN` and `CLIENT_STRIPE_KEY` on
-   the client. A manual `run` the same day returned `tier=terac`, which is the
-   proof the Terac key is live rather than merely present.
+1. **The loop runs unattended, and it is the demo.** Dispatch `order` on the
+   client repo: it places a work order as itself, the firm's `intake` answers
+   and closes the issue, and both sites republish. Issues #7 and #8 are that,
+   done. `pay` in `judge` mode is the settlement half.
 
-   What that unlocks, and nobody has exercised end to end since: the client can
-   place a work order **as itself**. Every order on the tracker so far was opened
-   by hand. `uv run client --question "..."` from the client repo, or the `pay`
-   workflow in `judge` mode, closes the loop with no human touching either end —
-   and that is the demo, not a chore. Check the token's scope is still **Issues:
-   write on the Broker repo only** before running it; that scope *is* the trust
-   boundary, and widening it quietly deletes the claim.
+   Every Terac and Stripe secret is set, confirmed against `gh secret list`. The
+   one still missing is the model key — item 4. Check the client token's scope is
+   still **Issues: write on the Broker repo only** before running it; that scope
+   *is* the trust boundary, and widening it quietly deletes the claim.
 2. **The golden run in a fresh clone is on the `recorded` tier**, because a
    clone has no key. The scheduled `run` workflow republishes it on the `terac`
    tier within the hour, so what a judge opens is the live tier. Both are
