@@ -4,15 +4,14 @@ import pytest
 
 from company.harness import main
 
-# Every variable that could make a live run diverge from the recorded one.
-LIVE_KEYS = ("TERAC_API_KEY", "TERAC_API_BASE", "STRIPE_RESTRICTED_KEY", "PIONEER_API_KEY")
-
 
 @pytest.fixture
 def no_credentials(monkeypatch):
-    """A fresh clone: no keys, nothing to call out to."""
-    for key in LIVE_KEYS:
-        monkeypatch.delenv(key, raising=False)
+    """A fresh clone: no keys, nothing to call out to.
+
+    conftest.py already clears every live key for every test -- this adds the
+    replay flag on top, for the one test that asserts byte-identity.
+    """
     monkeypatch.setenv("REPLAY_MODE", "true")
 
 
