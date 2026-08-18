@@ -139,8 +139,17 @@ so it needs no code of its own.
    Then `make run` and look at `runs/demo/02-triage.json`: `draft_source` should
    read `live` rather than `recorded`.
 
-For CI, the same three go in the firm repo as `MODEL_API_KEY` and
-`MODEL_API_BASE` (secrets) and `MODEL_NAME` (a variable — it is not sensitive):
+Locally these go in `.env`, which the `make` targets load for you. **In CI they
+must be repository secrets** — GitHub Actions never checks out a `.env`, so a
+value that lives only there reaches nothing.
+
+They belong to **this repository only**. The model produces the agent's *draft*,
+which happens in `triage`; the client agent composes orders, judges deliverables
+against its mandate, and pays, and never calls a model at all. Putting the key on
+the client would widen its credential surface for nothing.
+
+`MODEL_API_KEY` and `MODEL_API_BASE` are secrets; `MODEL_NAME` is a plain
+variable, because a model id is not sensitive:
 
 ```bash
 gh secret set MODEL_API_KEY  --body '<token>'

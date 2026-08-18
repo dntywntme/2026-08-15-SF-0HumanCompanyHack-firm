@@ -1,6 +1,14 @@
 UV ?= $(shell command -v uv 2>/dev/null || echo $(HOME)/.local/bin/uv)
 RUN_ID ?= demo
 
+# .env.example says "copy to .env", and for a long time nothing read the result:
+# no dotenv dependency, no --env-file, so a reader filled it in, ran make run,
+# and silently got the recorded tier with no explanation. Load it when it
+# exists, and stay out of the way when it does not -- CI passes real environment
+# variables and has no .env to find.
+ENV_FILE := $(wildcard .env)
+UVRUN = $(UV) run $(if $(ENV_FILE),--env-file .env,)
+
 .PHONY: check-uv setup test lint fmt run replay e2e clean
 
 # `make setup` is the first command the README gives a new reader, and uv
@@ -18,21 +26,21 @@ setup: check-uv
 	$(UV) sync
 
 test: check-uv
-	$(UV) run pytest
+	$(UVRUN) pytest
 
 lint: check-uv
-	$(UV) run ruff check .
-	$(UV) run ruff format --check .
+	$(UVRUN) ruff check .
+	$(UVRUN) ruff format --check .
 
 fmt:
-	$(UV) run ruff format .
-	$(UV) run ruff check --fix .
+	$(UVRUN) ruff format .
+	$(UVRUN) ruff check --fix .
 
 run:
-	$(UV) run company --run-id $(RUN_ID)
+	$(UVRUN) company --run-id $(RUN_ID)
 
 replay:
-	$(UV) run company --replay $(RUN_ID)
+	$(UVRUN) company --replay $(RUN_ID)
 
 e2e:
 	cd tools/uitest && npm install --silent && node e2e.js
