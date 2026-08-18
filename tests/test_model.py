@@ -8,7 +8,6 @@ from company.adapters.model import _parse, score_confidence
 
 
 def test_no_key_degrades_to_heuristic(monkeypatch):
-    monkeypatch.delenv("PIONEER_API_KEY", raising=False)
     s = score_confidence("Which headline is more compelling?", api_key="")
     assert s.source == "heuristic"
     assert "not set" in s.note
