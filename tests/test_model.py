@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from company.adapters.pioneer import Score, _parse, score_confidence
+from company.adapters.model import _parse, score_confidence
 
 
 def test_no_key_degrades_to_heuristic(monkeypatch):
@@ -24,26 +24,21 @@ def test_the_fallback_is_pessimistic_on_subjective_questions():
 
 
 @pytest.mark.parametrize(
-    ("content", "expected"),
+    ("content", "answer", "confidence"),
     [
-        ('{"confidence": 0.31}', 0.31),
-        ('Sure! Here is the result:\n{"confidence":0.9}\nHope that helps.', 0.9),
-        ("I would say 0.42 confident.", 0.42),
+        ('{"answer": "A.", "confidence": 0.31, "unknowns": ["taste"]}', "A.", 0.31),
+        ('Sure! Here it is:\n{"answer": "B.", "confidence": 0.9}\nHope that helps.', "B.", 0.9),
+        ('```json\n{"answer": "C.", "confidence": 0.5}\n```', "C.", 0.5),
     ],
 )
-def test_parses_a_number_out_of_messy_model_output(content, expected):
-    # Small models wrap JSON in prose more often than not.
-    s = _parse(content, "q", "m")
-    assert s.source == "pioneer" and s.confidence == expected
+def test_json_is_recovered_from_messy_model_output(content, answer, confidence):
+    # Small models wrap JSON in prose more often than not. Refusing to parse
+    # that would send every order to the recorded floor for no good reason.
+    parsed = _parse(content)
+    assert parsed["answer"] == answer
+    assert parsed["confidence"] == confidence
 
 
-@pytest.mark.parametrize("content", ["no number here", "", "confidence: 4.2"])
-def test_unparsable_output_falls_back_rather_than_guessing(content):
-    s = _parse(content, "Which is better?", "m")
-    assert s.source == "heuristic"
-
-
-def test_score_is_always_in_range():
-    for q in ["", "a" * 500, "Which one?"]:
-        s = score_confidence(q, api_key="")
-        assert isinstance(s, Score) and 0.0 <= s.confidence <= 1.0
+@pytest.mark.parametrize("content", ["no json here", "", "{unterminated", "[1,2,3]"])
+def test_unparsable_output_is_refused_rather_than_guessed(content):
+    assert _parse(content) is None

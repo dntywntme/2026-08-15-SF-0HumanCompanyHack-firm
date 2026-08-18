@@ -60,6 +60,12 @@ jobs:
       - name: Run the pipeline against it
         env:
           TERAC_API_KEY: ${{ secrets.TERAC_API_KEY }}
+          # Optional by design. Unset, the draft falls back to the recorded
+          # fixture and the run says so on the deliverable and the page -- so a
+          # missing model key degrades the answer, never the pipeline.
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+          MODEL_API_BASE: ${{ secrets.MODEL_API_BASE }}
+          MODEL_NAME: ${{ vars.MODEL_NAME }}
         run: |
           uv run python - <<'PY'
           import json, pathlib

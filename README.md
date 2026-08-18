@@ -102,6 +102,58 @@ company [--run-id ID]           run identifier (default: $RUN_ID, else a UTC tim
 Every variable the code reads is documented in [`.env.example`](.env.example);
 copy it to `.env`, which is gitignored.
 
+### Wiring a model (optional)
+
+Without one the agent's draft falls back to a committed fixture, and the run
+says so — on the deliverable, in the order thread, and on the dashboard. Nothing
+breaks; the answer is just labelled a recorded demonstration. With one, the
+pipeline answers the question that was actually asked.
+
+Any host serving the OpenAI chat-completions shape works. **Cloudflare Workers
+AI** is the recommended default: open-weight, free tier, and OpenAI-compatible,
+so it needs no code of its own.
+
+1. **Account id** — dash.cloudflare.com → Workers & Pages. It is the 32-hex
+   string in the URL, also shown on the overview page.
+2. **API token** — dash.cloudflare.com/profile/api-tokens → *Create Token* →
+   *Custom token*, with the single permission **Account · Workers AI · Read**.
+   Scope it to that one account. Nothing else is needed, and nothing else should
+   be granted.
+3. **Point the adapter at it:**
+
+   ```bash
+   MODEL_API_BASE=https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1
+   MODEL_API_KEY=<token>
+   MODEL_NAME=@cf/meta/llama-3.1-8b-instruct
+   ```
+
+4. **Check it before trusting it:**
+
+   ```bash
+   curl -s "$MODEL_API_BASE/chat/completions" \
+     -H "Authorization: Bearer $MODEL_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"model":"'"$MODEL_NAME"'","messages":[{"role":"user","content":"Reply with OK"}],"max_tokens":8}'
+   ```
+
+   Then `make run` and look at `runs/demo/02-triage.json`: `draft_source` should
+   read `live` rather than `recorded`.
+
+For CI, the same three go in the firm repo as `MODEL_API_KEY` and
+`MODEL_API_BASE` (secrets) and `MODEL_NAME` (a variable — it is not sensitive):
+
+```bash
+gh secret set MODEL_API_KEY  --body '<token>'
+gh secret set MODEL_API_BASE --body 'https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1'
+gh variable set MODEL_NAME   --body '@cf/meta/llama-3.1-8b-instruct'
+```
+
+Model ids move; check
+[the Workers AI catalogue](https://developers.cloudflare.com/workers-ai/models/)
+before pinning one. Pioneer, or anything else OpenAI-compatible, is two changed
+values — the adapter names a protocol, not a vendor, because pinning one is what
+made its predecessor's outage un-routable.
+
 ## How it works
 
 Nine stages, each checkpointed to `runs/<id>/` as it completes. They are the
