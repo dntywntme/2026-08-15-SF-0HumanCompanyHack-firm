@@ -97,6 +97,13 @@ class Product(Contract):
     before_confidence: float = Field(ge=0.0, le=1.0)
     after: str = Field(min_length=1)
     changed: bool
+    # False when the answer is a recorded fixture rather than one produced for
+    # this customer's question. The pipeline runs on committed fixtures so that
+    # --replay stays byte-identical, which means an order asking something new
+    # gets an answer to a question it did not ask. That is defensible as a
+    # mechanism demo and indefensible if it is not said out loud, so it is a
+    # field on the artifact rather than a caveat in a README.
+    answers_question: bool = True
     # The panel's own words, which are what the customer is really buying.
     evidence: list[str] = Field(default_factory=list)
     disclosures: list[str] = Field(default_factory=list)

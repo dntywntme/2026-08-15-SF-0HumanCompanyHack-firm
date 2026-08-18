@@ -271,14 +271,31 @@ def comply(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
 
 def triage(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     """Draft an answer, then judge whether it is good enough to sell."""
-    decisions, _, policy = _log(state)
+    decisions, incidents, policy = _log(state)
     halt = _halted(state)
     if halt:
         return _stop("triage", halt, state)
 
     ctx.spend_turn()  # the model call
-    draft = Draft(**state.get("draft", AGENT_DRAFT))
+    supplied = state.get("draft")
+    draft = Draft(**(supplied or AGENT_DRAFT))
     confident = draft.confidence >= policy.confidence_threshold
+
+    # The draft is a committed fixture, which is what keeps --replay
+    # byte-identical. It also means an order asking something new gets an answer
+    # to a question it did not ask. Say so here, at the point it becomes true,
+    # rather than letting a customer discover it from the answer.
+    order_question = state.get("order", DEMO_ORDER)["question"]
+    for_this_order = bool(supplied) or order_question == DEMO_ORDER["question"]
+    if not for_this_order:
+        incidents.record(
+            "recorded_answer",
+            "triage",
+            "no model is wired, so the draft is the recorded demo answer and does "
+            "not address the question this order asked",
+            "fulfilled as a mechanism demonstration and labelled as one on the "
+            "product, in the reply, and on the published page",
+        )
 
     decisions.record(
         "self_assess",
@@ -293,6 +310,7 @@ def triage(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         "stage": "triage",
         "draft": draft.payload(),
         "escalate": not confident,
+        "answers_question": for_this_order,
         **_render(state),
     }
 
@@ -431,14 +449,27 @@ def build(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
     after = SOURCED_ANSWER if human else before
     changed = after.strip() != before.strip()
 
+    answers_question = bool(state.get("answers_question", True))
+    disclosures = list(screening.get("disclosures", []))
+    if not answers_question:
+        # First in the list, because it changes what every other line means.
+        disclosures.insert(
+            0,
+            "THIS ANSWER IS A RECORDED DEMONSTRATION. No model is wired, so it "
+            "responds to the pipeline's fixed demo question and not to the one "
+            "you asked. The mechanism, the money and the decisions are real; "
+            "the answer is not an answer to your order.",
+        )
+
     product = Product(
         work_order_id=state.get("order", DEMO_ORDER)["id"],
         before=before,
         before_confidence=draft["confidence"],
         after=after,
         changed=changed,
+        answers_question=answers_question,
         evidence=list(human["responses"]) if human else [],
-        disclosures=list(screening.get("disclosures", [])),
+        disclosures=disclosures,
     )
 
     decisions.record(

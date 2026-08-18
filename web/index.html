@@ -421,6 +421,16 @@
     // The before/after: the event's mandatory deliverable, as an artifact.
     const product = from("product");
     if (product) {
+      if (product.answers_question === false) {
+        const w = document.createElement("p");
+        w.className = "mono";
+        w.style.color = "var(--danger)";
+        w.textContent =
+          "This run answered the pipeline's fixed demo question, not the one the " +
+          "order asked. No model is wired. The mechanism, the money and the " +
+          "decisions are real; the answer is a recorded demonstration.";
+        document.getElementById("beforeafter").prepend(w);
+      }
       document.getElementById("before").textContent = product.before;
       document.getElementById("after").textContent = product.after;
       document.getElementById("conf").textContent =

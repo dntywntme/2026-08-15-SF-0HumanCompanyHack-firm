@@ -1,6 +1,7 @@
 {
   "index": 2,
   "output": {
+    "answers_question": true,
     "decisions": [
       {
         "because": "well-formed, inside budget, and the question is answerable",
