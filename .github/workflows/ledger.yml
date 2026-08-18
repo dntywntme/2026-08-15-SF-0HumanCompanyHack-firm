@@ -2,7 +2,7 @@ name: ledger
 
 # Polls Stripe and republishes the dashboard. This is the server side the static
 # page cannot have: the restricted key is a repository secret and only aggregate
-# figures reach gh-pages. Terac exposes no webhooks either, so polling is the
+# figures are published. Terac exposes no webhooks either, so polling is the
 # only mechanism available for both feeds.
 
 on:
