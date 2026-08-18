@@ -35,6 +35,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
+from company.adapters.model import obtain_draft
 from company.adapters.terac import obtain_human_input
 from company.compliance import screen
 from company.decisions import DecisionLog
@@ -277,16 +278,28 @@ def triage(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         return _stop("triage", halt, state)
 
     ctx.spend_turn()  # the model call
+    order_question = state.get("order", DEMO_ORDER)["question"]
     supplied = state.get("draft")
-    draft = Draft(**(supplied or AGENT_DRAFT))
+    # Live model, else the recorded floor -- the same three-tier shape sourcing
+    # uses, and for the same reason: the checkpoint must say which one answered.
+    raw = (
+        {**supplied, "source": supplied.get("source", "supplied")}
+        if supplied
+        else obtain_draft(AGENT_DRAFT, question=order_question)
+    )
+    tier = raw.get("source", "recorded")
+    draft = Draft(
+        answer=raw["answer"],
+        confidence=raw["confidence"],
+        unknowns=list(raw.get("unknowns", [])),
+    )
     confident = draft.confidence >= policy.confidence_threshold
 
     # The draft is a committed fixture, which is what keeps --replay
     # byte-identical. It also means an order asking something new gets an answer
     # to a question it did not ask. Say so here, at the point it becomes true,
     # rather than letting a customer discover it from the answer.
-    order_question = state.get("order", DEMO_ORDER)["question"]
-    for_this_order = bool(supplied) or order_question == DEMO_ORDER["question"]
+    for_this_order = tier != "recorded" or order_question == DEMO_ORDER["question"]
     if not for_this_order:
         incidents.record(
             "recorded_answer",
@@ -311,6 +324,7 @@ def triage(ctx: RunContext, state: dict[str, Any]) -> dict[str, Any]:
         "draft": draft.payload(),
         "escalate": not confident,
         "answers_question": for_this_order,
+        "draft_source": tier,
         **_render(state),
     }
 
