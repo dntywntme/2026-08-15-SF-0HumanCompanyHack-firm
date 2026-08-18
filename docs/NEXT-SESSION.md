@@ -57,6 +57,27 @@ Struck from the previous handoff, with where it went:
   go through an https-only opener now, in both repos.
 - **`tools/uitest/e2e.js` was one 76-line function** flagged at complexity 17. It
   is decomposed per page, and it covers the client page too.
+
+Found on 2026-08-18 by running the loop end to end for the first time, none of
+it visible from reading the code:
+
+- **No workflow could place an order.** Settlement ran unattended from day one;
+  ordering only ever worked from a laptop, which is why every order on the
+  tracker was opened by hand. The client's `order` workflow closes it.
+- **The reply told fulfilled customers they had been refused.** Adding `market`
+  after `deliver` moved the deliverable out of `records[-1]`, and the reply was
+  built from there. `RunResult.emitted()` looks in the stage that produced an
+  artifact; a test pins the exact shape.
+- **The answer did not answer the question.** Fixtures keep replay
+  byte-identical and meant every order got the demo answer. `answers_question`,
+  an incident, and a warning above the answer — not under it.
+- **The client published nothing after acting.** A `GITHUB_TOKEN` push does not
+  trigger another workflow, so its page reported the previous order. Both acting
+  workflows deploy the site themselves now, as the firm's always did.
+- **`adapters/pioneer.py` was dead and vendor-pinned.** It is `adapters/model.py`
+  now and names a protocol instead: anything serving the OpenAI
+  chat-completions shape works. The pinning is what made the original 404
+  outage un-routable.
 - **Issue #1 had been closed as `completed` with no deliverable** — a customer
   order the Issues tab showed as fulfilled and never was. Root cause, which is
   worth not re-investigating: `intake.yml` was committed at `01:10:32Z` and the
@@ -95,18 +116,24 @@ Struck from the previous handoff, with where it went:
    to bypass required pull requests", *then* require a PR and Code Owner review.
    Doing it in the other order takes the live P&L down, which is the one thing on
    the dashboard a judge is most likely to check.
-4. **Two stale branches**, `feat/gh-hosting` and `feat/contracts`, sit ~2,900
-   lines behind `main` and carry no unique commits. They are what re-report
-   already-fixed findings to the code scanner. Delete them.
-5. **`adapters/pioneer.py` is still dead.** Every inference call returns 404 with
-   a valid key and a redeemed voucher. Either get it answering or delete it — the
-   Pioneer track is unclaimable either way until it does.
-6. **The four Terac approvals happened in the dashboard**, not through
+4. **The model has no key, so every draft is the recorded fixture.** This is
+   the highest-value item on the page and it is a secret, not code. Set
+   `MODEL_API_KEY` and `MODEL_API_BASE` as repository secrets and the pipeline
+   answers the question a customer actually asked; leave them and it keeps
+   saying, correctly and loudly, that it did not. Recommended:
+   Cloudflare Workers AI on `@cf/meta/llama-3.1-8b-instruct` — open weight, free
+   tier, and OpenAI-compatible, so it needs no code of its own. A token with
+   **Workers AI: Read** from dash.cloudflare.com/profile/api-tokens is the whole
+   setup. Any host serving `POST {base}/chat/completions` works; see
+   [`.env.example`](../.env.example).
+5. **The four Terac approvals happened in the dashboard**, not through
    `approve_submission`. The payment is real; the approval decision was not
    exercised through the API. Study #2's *launch* was the agent's.
-7. **Confidence is uncalibrated.** Every run records the score and whether the
-   panel disagreed. Nobody has checked whether they correlate, and the
-   escalation rate that decides viability is unmeasured.
+6. **Confidence is uncalibrated**, and item 4 is what unblocks it. Recorded
+   drafts all carry the same score, so there is nothing to correlate until real
+   ones start arriving. Once they do, every run already stores the score and
+   whether the panel disagreed, and the escalation rate that decides viability
+   falls straight out of the pair.
 
 **Do not automate a Terac launch.** `adapters/terac.py` only reads submissions,
 which costs nothing. Launching spends real money and stays a human decision,
@@ -125,15 +152,17 @@ once — otherwise the `*/5` ledger cron becomes a spending loop.
 3. **An entity.** Terms, privacy and disclosures are all published now, and none
    of them has a legal person behind it. Stripe Atlas is the route; everything in
    [`REQUIREMENTS.md`](REQUIREMENTS.md#5-legalcompliance) below it depends on it.
-4. **Calibrate the confidence score.** Every run records the score and whether
-   the panel disagreed. Nobody has checked whether they correlate, and the
-   escalation rate that decides viability falls straight out of it.
-5. **A dispute path.** An agent that can take money has to be able to be wrong.
+4. **A dispute path.** An agent that can take money has to be able to be wrong.
    The refund policy is the piece, and it needs a spend guard of its own.
 
-Built in the 2026-08-17 pass, so struck from this list: published terms and
-privacy cited by id, jurisdiction on the work order, the machine-readable offer
-at `/offer.json`, and the money-flow strip.
+Built in the 2026-08-17 pass: published terms and privacy cited by id,
+jurisdiction on the work order, the machine-readable offer at `/offer.json`, and
+the money-flow strip.
+
+Built in the 2026-08-18 pass: the client can place an order unattended, the
+draft runs on a real model when one is configured, and both stale branches are
+gone. Calibration moved from here into "still open" as item 6, because it is now
+blocked on a secret rather than on work.
 
 Longer term, the client is where the societies.io-shaped idea would go: replace
 the single `evaluate()` with a handful of mandate profiles differing on risk
