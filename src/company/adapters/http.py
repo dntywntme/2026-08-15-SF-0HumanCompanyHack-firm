@@ -1,7 +1,7 @@
 """One opener for every outbound call the company makes.
 
 Adapters read their base URL from the environment, which makes the *scheme* a
-runtime value rather than a constant: ``PIONEER_API_BASE=file:///etc/passwd``
+runtime value rather than a constant: ``MODEL_API_BASE=file:///etc/passwd``
 would otherwise turn a completions call into a local file read, and the result
 would land in a checkpoint that gets published to a static site. So every
 request goes through :func:`open_https`, which refuses anything but ``https``

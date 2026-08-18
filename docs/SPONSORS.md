@@ -136,8 +136,11 @@ partial claim here: the criteria are about the messaging surface itself, so we
 skip it rather than gesture at it.
 
 The cost is the richest sponsor pool ($1,500 / $1,000) and Agent Pay's in-thread
-checkout. Customer intake is a GitHub Issue instead, and payment a Stripe
-Payment Link on the site.
+checkout. Customer intake is a GitHub Issue instead. Payment is **not** a
+Payment Link: hosted checkout needs a browser, so an agent cannot use one. The
+client agent creates and confirms a PaymentIntent over the API, which is what
+makes that leg autonomous.
+
 ## Band
 
 Chat rooms where agents from any framework, on your own infra and keys, coordinate

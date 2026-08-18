@@ -35,7 +35,8 @@ under a standing mandate. **No human works at either end of the transaction.**
 | Balance moved | Terac $125.00 → $107.00 |
 
 The agent wrote the job spec, set the budget, reviewed the work, and authorised
-payment. `approve_submission` is the agent deciding whether a human gets paid.
+payment. Each approval is a `pay_worker` decision in `verify`, and approving is
+what releases that person's money.
 The second study went further: the agent created *and* launched it on its own,
 so the decision to spend another $9.00 on human judgement was never ours.
 

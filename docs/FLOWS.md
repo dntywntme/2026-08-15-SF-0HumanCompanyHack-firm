@@ -47,7 +47,8 @@ Live surfaces — all static, none holds a credential:
  │  src/company/stages.py      intake → comply → triage → source → verify →  │
  │                             build → price → deliver → market              │
  │  src/company/adapters/http.py      https only, checked before opening     │
- │  src/company/adapters/pioneer.py   confidence on an open-weight model     │
+ │  src/company/adapters/model.py     the draft, on any OpenAI-compatible    │
+ │                                    host; three tiers, each labelled       │
  │  src/company/adapters/terac.py     three sourcing tiers, each labelled    │
  │  scripts/poll_ledger.py     rk_ read-only · publishes aggregates only     │
  │  scripts/build_site.py      one assembly path · derives /offer.json       │
@@ -58,9 +59,9 @@ Live surfaces — all static, none holds a credential:
       │              │                   │                  │
       ▼              ▼                   ▼                  ▼
   ┌────────┐   ┌───────────┐      ┌────────────┐    ┌──────────────┐
-  │ TERAC  │   │  PIONEER  │      │   STRIPE   │    │ GITHUB PAGES │
-  │ MCP    │   │ Qwen3-8B  │      │ rk_ read   │    │ static, holds│
-  │ humans │   │ confidence│      │ only       │    │ NO secrets   │
+  │ TERAC  │   │   MODEL   │      │   STRIPE   │    │ GITHUB PAGES │
+  │ MCP    │   │ llama3.1  │      │ rk_ read   │    │ static, holds│
+  │ humans │   │ the draft │      │ only       │    │ NO secrets   │
   └────────┘   └───────────┘      └────────────┘    └──────────────┘
    cost of      the buy/don't-      revenue in       the published
    goods        buy decision                          artifact
@@ -130,7 +131,7 @@ honest fit rather than a bolt-on.
                                      │                                            🧑
                                      │                     verify   human vs draft
                                      │                     ┌──────────────────────┐
-                                     │                     │ approve_submission   │
+                                     │                     │ pay_worker decision  │
                                      │                     │ = THE HUMAN IS PAID  │
                                      │                     └──────────────────────┘
                                      │                     build    before / after
@@ -147,6 +148,6 @@ honest fit rather than a bolt-on.
                                                               live on the P&L
 ```
 
-The sharpest frame for a reader: **`approve_submission` is the agent deciding
-whether a human gets paid.** It writes the job spec, sets the budget, reviews
+The sharpest frame for a reader: **the `pay_worker` decision in `verify` is the
+agent deciding whether a human gets paid.** It writes the job spec, sets the budget, reviews
 the work, and authorises payroll — and no human reviewed any of it.

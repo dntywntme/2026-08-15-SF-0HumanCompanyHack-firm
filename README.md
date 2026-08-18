@@ -181,8 +181,9 @@ and makes hard calls, so each of those is a stage you can open:
 
 `triage` is the whole idea in one stage: Broker scores its own confidence, and
 below threshold it stops answering and escalates to a human instead of guessing.
-`verify` is the sharpest frame — `approve_submission` is the agent deciding
-whether a human gets paid. `comply` is the cheapest control in the company: the
+`verify` is the sharpest frame: for each submission it records a `pay_worker`
+decision, and approving is what releases that person's money. The agent wrote the
+spec, set the budget, reviewed the work and authorised the payment. `comply` is the cheapest control in the company: the
 only moment at which refusing an order is still free. `build` is where the
 event's mandatory before/after stops being a claim and becomes a field on the
 artifact. Clause-by-clause coverage, including what is missing:
